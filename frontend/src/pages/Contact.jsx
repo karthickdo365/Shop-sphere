@@ -1,5 +1,10 @@
-import React, { useState } from 'react';
-import '../styles/contact.css';
+import React, { useState } from "react";
+import "../styles/Contact.css";
+import api from "../utils/api";
+
+
+
+
 
 
 const CONTACT_IMAGE = 'https://images.unsplash.com/photo-1558522195-e1201b090344?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
@@ -18,18 +23,11 @@ export default function Contact({ brandName = 'Our Store' }) {
   setStatus("sending");
 
   try {
-    const res = await fetch("http://localhost:5000/api/contact", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(form),
-    });
-
-    const data = await res.json();
+    const { data } = await api.post("/contact", form);
 
     if (data.success) {
       setStatus("sent");
+
       setForm({
         name: "",
         email: "",
