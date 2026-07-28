@@ -1,0 +1,23 @@
+/* ============================================
+   Shared design tokens — import once in App.jsx
+   or at the top of index.css:
+   @import './tokens.css';
+   ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Color */
+  --ink: #1E2A22;        /* deep forest-charcoal — primary text / dark bg */
+  --paper: #F7F3EA;       /* warm ivory background */
+  --gold: #B8863B;        /* muted brass accent */
+  --moss: #57694C;        /* sage green secondary */
+  --white: #FFFFFF;
+  --line: rgba(30, 42, 34, 0.12);
+
+  /* Type */
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', -apple-system, sans-serif;
+
+  /* Signature: clipped packaging-corner cut size */
+  --clip-cut: 36px;
+}
