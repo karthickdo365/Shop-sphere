@@ -102,14 +102,20 @@ export default function AdminProducts() {
     }
   };
 
-  const uploadImage = async (file) => {
-    const fd = new FormData();
-    fd.append('image', file);
-    const r = await api.post('/uploads', fd, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-   return r.data.imageUrl;
-  };
+ const uploadImage = async (file) => {
+  const fd = new FormData();
+  fd.append("image", file);
+
+  const r = await api.post("/uploads", fd, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  console.log(r.data); // check response
+
+  return r.data.data.url;
+};
 
   const onFileChange = async (e) => {
     const files = Array.from(e.target.files);
@@ -188,6 +194,7 @@ export default function AdminProducts() {
   };
 
   const handleSave = async (e) => {
+
     e.preventDefault();
     if (!form.name.trim() || !form.basePrice || !form.categoryId) {
       toast.error('Name, Price, and Category are required');
@@ -209,6 +216,7 @@ export default function AdminProducts() {
         images: form.images,
         variants: form.variants,
       };
+       console.log(payload);
       if (editing) {
         await api.put(`/products/${editing.id}`, payload);
         // Save specifications separately
