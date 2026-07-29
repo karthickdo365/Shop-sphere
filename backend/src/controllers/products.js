@@ -163,20 +163,45 @@ export const getProduct = async (req, res) => {
 };
 
 export const createProduct = async (req, res) => {
+  console.log("BODY:");
+  console.dir(req.body, { depth: null });
+
   const data = req.body;
-  const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+  const slug = data.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
   const product = await prisma.product.create({
     data: {
       ...data,
       slug,
-      images: data.images ? { create: data.images } : undefined,
-      variants: data.variants ? { create: data.variants } : undefined,
+      images: data.images?.length
+        ? {
+            create: data.images,
+          }
+        : undefined,
+      variants: data.variants?.length
+        ? {
+            create: data.variants,
+          }
+        : undefined,
     },
-    include: { images: true, variants: true },
+    include: {
+      images: true,
+      variants: true,
+    },
   });
-  res.status(201).json({ success: true, data: product });
-};
 
+  console.log("CREATED PRODUCT:");
+  console.dir(product, { depth: null });
+
+  res.status(201).json({
+    success: true,
+    data: product,
+  });
+};
 export const updateProduct = async (req, res) => {
   const { id } = req.params;
   const data = { ...req.body };
