@@ -108,7 +108,7 @@ export default function AdminProducts() {
     const r = await api.post('/uploads', fd, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return r.data.data.url;
+   return r.data.imageUrl;
   };
 
   const onFileChange = async (e) => {
