@@ -190,19 +190,24 @@ export const updateProduct = async (req, res) => {
   }
 
   // Replace images if provided
+  console.log("Images received:", newImages);
   if (Array.isArray(newImages)) {
     await prisma.productImage.deleteMany({ where: { productId: id } });
-    if (newImages.length > 0) {
-      await prisma.productImage.createMany({
-        data: newImages.map((img, i) => ({
-          productId: id,
-          url: img.url,
-          alt: img.alt || null,
-          position: img.position ?? i,
-        })),
-      });
-    }
-  }
+ const validImages = newImages
+  .filter((img) => img && img.url)
+  .map((img, i) => ({
+    productId: id,
+    url: img.url,
+    alt: img.alt || null,
+    position: img.position ?? i,
+  }));
+
+if (validImages.length > 0) {
+  await prisma.productImage.createMany({
+    data: validImages,
+  });
+} 
+     }
 
   // Replace variants if provided
   if (Array.isArray(newVariants)) {
