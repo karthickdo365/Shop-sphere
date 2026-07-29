@@ -1,5 +1,5 @@
 import { Router } from "express";
-import upload from "../middlewares/upload.js";
+import upload from "../middleware/upload.js";
 import { protect, requireAdmin } from "../middleware/auth.js";
 
 const router = Router();
