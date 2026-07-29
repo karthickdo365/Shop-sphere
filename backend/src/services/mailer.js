@@ -6,30 +6,27 @@ const getTransporter = () => {
   if (transporter) return transporter;
 
   if (!process.env.SMTP_HOST || !process.env.SMTP_USER) {
-    console.warn('[mailer] SMTP env vars not set — emails will be logged to console only');
+    console.warn("[mailer] SMTP env vars not set");
     return null;
   }
 
   transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: process.env.SMTP_SECURE === 'true',
+    port: Number(process.env.SMTP_PORT),
+    secure: process.env.SMTP_SECURE === "true",
+
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
+
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
   });
 
-  transporter.verify(function (error, success) {
-  if (error) {
-    console.error("SMTP VERIFY ERROR:", error);
-  } else {
-    console.log("SMTP Server is ready");
-  }
-});
   return transporter;
 };
-
 /**
  * Send an email. If SMTP is not configured, the message is logged instead.
  * @param {string} to
@@ -55,9 +52,16 @@ export const sendEmail = async (to, subject, html) => {
     console.log('[mailer] Email sent:', info.messageId);
     return { messageId: info.messageId };
   } catch (err) {
-    console.error('[mailer] Failed to send email:', err.message);
-    throw err;
-  }
+  console.error("EMAIL ERROR");
+  console.error(err);
+
+  console.error("code:", err.code);
+  console.error("response:", err.response);
+  console.error("responseCode:", err.responseCode);
+  console.error("command:", err.command);
+
+  throw err;
+}
 };
 
 export const sendPasswordResetEmail = async (to, resetUrl, userName) => {
