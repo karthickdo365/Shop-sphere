@@ -18,15 +18,13 @@ export const validate = (schema, source = 'body') => (req, res, next) => {
 export const schemas = {
  register: z.object({
   name: z.string().min(2).max(80),
-  email: z.string().email(),
-  password: z.string().min(6).max(72),
+
   phone: z.string().min(10).max(15).optional(),
   otpVerified: z.boolean().optional(),
 }),
-  login: z.object({
-    email: z.string().email(),
-    password: z.string().min(1),
-  }),
+ login: z.object({
+  phone: z.string().min(10).max(15),
+}),
   product: z.object({
     name: z.string().min(3).max(200),
     description: z.string().max(5000).optional(),
