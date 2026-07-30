@@ -122,3 +122,35 @@ export const sendOtpEmail = async (to, code, userName, purpose = 'REGISTER') => 
   `;
   return sendEmail(to, `ShopSphere - Your OTP: ${code}`, html);
 };
+export const sendVerificationEmail = async (to, verifyUrl, userName) => {
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto">
+
+      <h2>Welcome to ShopSphere</h2>
+
+     <p>Hi ${userName || "there"},</p>
+
+      <p>Click the button below to verify your email address.</p>
+
+      <a href="${verifyUrl}"
+      style="
+      background:#f43336;
+      color:#fff;
+      padding:12px 24px;
+      text-decoration:none;
+      border-radius:6px;
+      display:inline-block;">
+      Verify Email
+      </a>
+
+      <p>This link expires in 1 hour.</p>
+
+    </div>
+  `;
+
+  return sendEmail(
+    to,
+    "Verify your ShopSphere account",
+    html
+  );
+};

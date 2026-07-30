@@ -25,6 +25,7 @@ import swaggerSpec from './docs/swagger.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 
 import contactRoutes from "./routes/contact.js";
+import emailVerificationRoutes from "./routes/emailVerification.js";
 
 
 
@@ -84,7 +85,7 @@ app.use('/api', specificationRoutes);
 app.use('/api/otp', otpRoutes);
 app.use('/api/banners', bannerRoutes);
 app.use("/api/contact", contactRoutes);
-
+app.use("/api/email", emailVerificationRoutes);
 // =========================
 // Swagger UI
 // =========================

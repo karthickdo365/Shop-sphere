@@ -2,115 +2,116 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import prisma from '../config/db.js';
 import { signToken } from '../middleware/auth.js';
-import { sendPasswordResetEmail } from '../services/mailer.js';
+import {
+  sendPasswordResetEmail,
+  sendVerificationEmail,
+} from "../services/mailer.js";
 
 export const register = async (req, res) => {
- const { name, phone, otpVerified } = req.body;
- const normalizedPhone = phone.startsWith("+91")
-  ? phone
-  : `+91${phone}`;
-  console.log("========== REGISTER ==========");
-console.log("BODY:", req.body);
-console.log("otpVerified:", otpVerified);
+  const { name, email, password } = req.body;
 
-  const requireOtp = (process.env.OTP_REQUIRE_FOR_REGISTER || 'true') !== 'false';
-
- const existing = await prisma.user.findUnique({
-  where: { phone: normalizedPhone },
-});
-  if (existing) {
-    return res.status(409).json({ success: false, message: "Phone number already registered" });
-  }
-
-  // If OTP is required, ensure the email was verified via /api/otp/verify
-  let isEmailVerified = false;
-  if (requireOtp) {
-    if (!otpVerified) {
-      return res.status(400).json({
-        success: false,
-message: "Please verify your WhatsApp OTP first.",
-        requiresOtp: true,
-      });
-    }
-    // Confirm a verified OTP exists in DB for this email+purpose=REGISTER
- const verified = await prisma.otp.findFirst({
-  where: {
-    phone: normalizedPhone,
-    purpose: "REGISTER",
-    verified: true,
-  },
-  orderBy: {
-    createdAt: "desc",
-  },
-});
-console.log("VERIFIED OTP:", verified);
-
-
-
-    if (!verified) {
-      return res.status(400).json({
-        success: false,
-      message: "No verified WhatsApp OTP found.",
-        requiresOtp: true,
-      });
-    }
-    // Invalidate the OTP so it can't be reused
-    await prisma.otp.update({ where: { id: verified.id }, data: { usedAt: new Date() } });
-    isEmailVerified = true;
-  }
-
-  // const hashed = await bcrypt.hash(password, 10);
-  const user = await prisma.user.create({
-   data: {
-  name,
-  phone: normalizedPhone,
-  isEmailVerified,
-},
-    select: { id: true, name: true,  role: true, phone: true, },
+  const existing = await prisma.user.findUnique({
+    where: { email },
   });
-  // Auto-create cart
-  await prisma.cart.create({ data: { userId: user.id } });
 
-  const token = signToken(user.id);
-  res.status(201).json({ success: true, data: { user, token } });
+  if (existing) {
+    return res.status(409).json({
+      success: false,
+      message: "Email already registered",
+    });
+  }
+
+  const token = crypto.randomBytes(32).toString("hex");
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  // Delete old pending verification for this email
+  await prisma.emailVerification.deleteMany({
+    where: { email },
+  });
+
+  
+
+
+
+  await prisma.emailVerification.create({
+  data: {
+    name,
+    email,
+    password: hashedPassword,
+    token,
+    expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+  },
+});
+
+const verifyUrl =
+  `${process.env.BACKEND_URL}/api/email/verify?token=${token}`;
+
+await sendVerificationEmail(
+  email,
+  verifyUrl,
+  name
+);
+
+return res.status(200).json({
+  success: true,
+  message: "Verification link sent. Please check your email.",
+});
 };
+  
+  
+
+ 
+
+
+
+
 
 export const login = async (req, res) => {
- const { phone } = req.body;
+  const { email, password } = req.body;
 
-if (!phone) {
-  return res.status(400).json({
-    success: false,
-    message: "Phone number is required",
+  if (!email || !password) {
+    return res.status(400).json({
+      success: false,
+      message: "Email and password are required",
+    });
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email },
   });
-}
 
-const user = await prisma.user.findUnique({
-  where: { phone },
-});
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "Account not found",
+    });
+  }
 
-if (!user) {
-  return res.status(404).json({
-    success: false,
-    message: "Account not found",
-  });
-}
+  const ok = await bcrypt.compare(password, user.password);
+
+  if (!ok) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid password",
+    });
+  }
+
   const token = signToken(user.id);
+
   res.json({
     success: true,
     data: {
       user: {
         id: user.id,
         name: user.name,
-       role: user.role,
-        phone: user.phone,
-        
+        email: user.email,
+        role: user.role,
+        isEmailVerified: user.isEmailVerified,
       },
       token,
     },
   });
 };
-
 export const me = async (req, res) => {
   res.json({ success: true, data: req.user });
 };
@@ -131,7 +132,11 @@ export const addAddress = async (req, res) => {
   const address = await prisma.address.create({
     data: { userId: req.user.id, fullName, phone, line1, line2, city, state, pincode, isDefault: !!isDefault },
   });
-  res.status(201).json({ success: true, data: address });
+  res.status(201).json({
+  success: true,
+  data: address,
+});
+
 };
 
 // =========================
@@ -228,7 +233,8 @@ export const forgotPassword = async (req, res) => {
 
   // Build reset URL
   const appUrl = process.env.APP_URL || 'http://localhost:5173';
-  const resetUrl = `${appUrl}/reset-password?token=${token}`;
+const resetUrl =
+`${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
   // Send email
   try {
@@ -308,5 +314,8 @@ export const changePassword = async (req, res) => {
     where: { id: user.id },
     data: { password: hashed },
   });
-  res.json({ success: true, message: 'Password changed successfully' });
+ res.json({
+  success: true,
+  message: "Password changed successfully",
+});
 };

@@ -15,22 +15,22 @@ datasource db {
 // =========================
 model User {
   id              String   @id @default(cuid())
-  email           String? @unique
+  email           String   @unique
   password        String?
   name            String
-  phone           String @unique
+  phone           String?  @unique
   role            Role     @default(CUSTOMER)
   isEmailVerified Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  cart      Cart?
-  orders    Order[]
-  wishlist  WishlistItem[]
-  reviews   Review[]
-  addresses Address[]
+  cart           Cart?
+  orders         Order[]
+  wishlist       WishlistItem[]
+  reviews        Review[]
+  addresses      Address[]
   passwordResets PasswordReset[]
-  otps      Otp[]
+  otps           Otp[]
 }
 
 enum Role {
@@ -39,70 +39,70 @@ enum Role {
 }
 
 model Address {
-  id       String  @id @default(cuid())
-  userId   String
-  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  fullName String
-  phone    String
-  line1    String
-  line2    String?
-  city     String
-  state    String
-  pincode  String
-  isDefault Boolean @default(false)
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName  String
+  phone     String
+  line1     String
+  line2     String?
+  city      String
+  state     String
+  pincode   String
+  isDefault Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  orders   Order[]
+  orders    Order[]
 }
 
 // =========================
 // Catalog
 // =========================
 model Category {
-  id          String        @id @default(cuid())
-  name        String
-  slug        String        @unique
-  description String?
-  image       String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  products    Product[]
+  id            String        @id @default(cuid())
+  name          String
+  slug          String        @unique
+  description   String?
+  image         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  products      Product[]
   subcategories Subcategory[]
 }
 
 model Subcategory {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  categoryId  String
-  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  products    Product[]
+  id         String    @id @default(cuid())
+  name       String
+  slug       String    @unique
+  categoryId String
+  category   Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  products   Product[]
 }
 
 model Product {
-  id             String       @id @default(cuid())
-  name           String
-  slug           String       @unique
-  description    String?
-  basePrice      Float
-  discountPrice  Float?
-  currency       String       @default("INR")
-  bundleAvailable Boolean     @default(false)
-  bundleLabel    String?
-  isFeatured     Boolean      @default(false)
-  isNewArrival   Boolean      @default(false)
-  isOnOffer      Boolean      @default(false)
-  rating         Float        @default(0)
-  numReviews     Int          @default(0)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id              String   @id @default(cuid())
+  name            String
+  slug            String   @unique
+  description     String?
+  basePrice       Float
+  discountPrice   Float?
+  currency        String   @default("INR")
+  bundleAvailable Boolean  @default(false)
+  bundleLabel     String?
+  isFeatured      Boolean  @default(false)
+  isNewArrival    Boolean  @default(false)
+  isOnOffer       Boolean  @default(false)
+  rating          Float    @default(0)
+  numReviews      Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  categoryId     String
-  category       Category     @relation(fields: [categoryId], references: [id])
-  subcategoryId  String?
-  subcategory    Subcategory? @relation(fields: [subcategoryId], references: [id])
+  categoryId    String
+  category      Category     @relation(fields: [categoryId], references: [id])
+  subcategoryId String?
+  subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id])
 
   images         ProductImage[]
   variants       ProductVariant[]
@@ -119,9 +119,9 @@ model ProductSpecification {
   id        String   @id @default(cuid())
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  section   String   // e.g. "Display", "Performance", "Battery", "General", "Material"
-  key       String   // e.g. "Size", "RAM", "Capacity", "Age Group"
-  value     String   // e.g. "6.7 inch", "8 GB", "5000 mAh", "3+ Years"
+  section   String // e.g. "Display", "Performance", "Battery", "General", "Material"
+  key       String // e.g. "Size", "RAM", "Capacity", "Age Group"
+  value     String // e.g. "6.7 inch", "8 GB", "5000 mAh", "3+ Years"
   position  Int      @default(0)
   createdAt DateTime @default(now())
 
@@ -139,13 +139,13 @@ model ProductImage {
 
 // Variant = size + color combination, each with its own stock
 model ProductVariant {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   productId String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   size      String
   color     String
-  stock     Int      @default(0)
-  sku       String   @unique
+  stock     Int     @default(0)
+  sku       String  @unique
 }
 
 // =========================
@@ -161,44 +161,44 @@ model Cart {
 }
 
 model CartItem {
-  id          String   @id @default(cuid())
-  cartId      String
-  cart        Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  productId   String
-  product     Product  @relation(fields: [productId], references: [id])
-  variantId   String?
-  size        String
-  color       String
-  quantity    Int      @default(1)
-  priceAtAdd  Float
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  cartId     String
+  cart       Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+  variantId  String?
+  size       String
+  color      String
+  quantity   Int      @default(1)
+  priceAtAdd Float
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model Order {
-  id              String      @id @default(cuid())
-  orderNumber     String      @unique
-  userId          String
-  user            User        @relation(fields: [userId], references: [id])
-  items           OrderItem[]
-  addressId       String?
-  address         Address?    @relation(fields: [addressId], references: [id])
+  id          String      @id @default(cuid())
+  orderNumber String      @unique
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  items       OrderItem[]
+  addressId   String?
+  address     Address?    @relation(fields: [addressId], references: [id])
 
-  subtotal        Float
-  shipping        Float       @default(0)
-  tax             Float       @default(0)
-  total           Float
-  currency        String      @default("INR")
+  subtotal Float
+  shipping Float  @default(0)
+  tax      Float  @default(0)
+  total    Float
+  currency String @default("INR")
 
-  status          OrderStatus @default(PENDING)
-  paymentMethod   String      @default("RAZORPAY")
-  paymentStatus   PaymentStatus @default(PENDING)
-  razorpayOrderId String?
+  status            OrderStatus   @default(PENDING)
+  paymentMethod     String        @default("RAZORPAY")
+  paymentStatus     PaymentStatus @default(PENDING)
+  razorpayOrderId   String?
   razorpayPaymentId String?
   razorpaySignature String?
 
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum OrderStatus {
@@ -218,11 +218,11 @@ enum PaymentStatus {
 }
 
 model OrderItem {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   orderId   String
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId String
-  product   Product  @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
   name      String
   size      String
   color     String
@@ -265,53 +265,70 @@ model Review {
 // =========================
 model Newsletter {
   id        String   @id @default(cuid())
-  email     String?   @unique
+  email     String?  @unique
   createdAt DateTime @default(now())
 }
 
 model Coupon {
-  id          String   @id @default(cuid())
-  code        String   @unique
+  id          String    @id @default(cuid())
+  code        String    @unique
   description String?
-  type        String   @default("PERCENT") // PERCENT | FLAT
+  type        String    @default("PERCENT") // PERCENT | FLAT
   value       Float
-  minOrder    Float    @default(0)
+  minOrder    Float     @default(0)
   maxDiscount Float?
-  isActive    Boolean  @default(true)
-  startsAt    DateTime @default(now())
+  isActive    Boolean   @default(true)
+  startsAt    DateTime  @default(now())
   endsAt      DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 // Password reset tokens (emailed to user via SMTP)
-model PasswordReset {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  token     String   @unique
+
+model EmailVerification {
+  id        String    @id @default(cuid())
+  name      String
+  email     String
+  password  String
+  token     String    @unique
+  purpose   String    @default("REGISTER")
   expiresAt DateTime
   usedAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   @@index([token])
 }
 
-// OTP verification codes (for registration & phone verification)
-model Otp {
-  id        String   @id @default(cuid())
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  email     String?
-  phone     String
-  code      String   // 6-digit OTP
-  purpose   String   @default("REGISTER") // REGISTER | LOGIN | RESET
- channel String @default("WHATSAPP")
-  verified  Boolean  @default(false)
+model PasswordReset {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  token     String    @unique
   expiresAt DateTime
   usedAt    DateTime?
-  attempts  Int      @default(0)
+
   createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// OTP verification codes (for registration & phone verification)
+model Otp {
+  id        String    @id @default(cuid())
+  userId    String?
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email     String
+  phone     String?
+  code      String // 6-digit OTP
+  purpose   String    @default("REGISTER") // REGISTER | LOGIN | RESET
+  channel   String    @default("EMAIL")
+  verified  Boolean   @default(false)
+  expiresAt DateTime
+  usedAt    DateTime?
+  attempts  Int       @default(0)
+  createdAt DateTime  @default(now())
 
   @@index([email])
   @@index([code])
@@ -319,15 +336,15 @@ model Otp {
 
 // Home page banners (admin-managed carousel)
 model Banner {
-  id          String   @id @default(cuid())
-  title       String
-  subtitle    String?
-  imageUrl    String
-  linkUrl     String?
-  position    Int      @default(0)
-  isActive    Boolean  @default(true)
-  startsAt    DateTime?
-  endsAt      DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String    @id @default(cuid())
+  title     String
+  subtitle  String?
+  imageUrl  String
+  linkUrl   String?
+  position  Int       @default(0)
+  isActive  Boolean   @default(true)
+  startsAt  DateTime?
+  endsAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }

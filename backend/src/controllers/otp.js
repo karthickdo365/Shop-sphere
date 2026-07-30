@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import prisma from '../config/db.js';
-// import { sendOtpEmail } from '../services/mailer.js';
+import { sendOtpEmail } from '../services/mailer.js';
 import smsService from '../services/sms.js';
 
 const { sendOtpSms, sendOtpWhatsApp, isConfigured: smsConfigured } = smsService;
@@ -29,12 +29,12 @@ const normalizePhone = (p) => {
  * (and the OTP is still logged to the backend console).
  */
 export const sendOtp = async (req, res) => {
- const { phone, purpose = "REGISTER", channel } = req.body;
+const { email, purpose = "REGISTER" } = req.body;
 
-if (!phone) {
+if (!email) {
   return res.status(400).json({
     success: false,
-    message: "Phone number is required",
+    message: "Email is required",
   });
 }
 const normalizedPhone = normalizePhone(phone);
@@ -66,20 +66,20 @@ if (!smsConfigured()) {
 
   // Create new OTP record
   const otp = await prisma.otp.create({
-    data: {
-     email: null,
-phone: normalizedPhone,
-      code,
-      purpose,
-      channel: effectiveChannel,
-      expiresAt: new Date(Date.now() + TTL_MINUTES * 60 * 1000),
-    },
+data: {
+  email,
+  phone: null,
+  code,
+  purpose,
+  channel: "EMAIL",
+  expiresAt: new Date(Date.now() + TTL_MINUTES * 60 * 1000),
+},
   });
 
   // Send via chosen channel
   let delivery = {};
   try {
- await sendOtpWhatsApp(normalizedPhone, code, purpose);
+await sendOtpEmail(email, code, undefined, purpose);
 
 delivery.whatsapp = true;
   } catch (err) {
@@ -97,7 +97,7 @@ delivery.whatsapp = true;
 
   res.json({
     success: true,
-   message: `OTP sent to ${normalizedPhone}. Valid for ${TTL_MINUTES} minutes.`,
+  message: `OTP sent to ${email}. Valid for ${TTL_MINUTES} minutes.`,
     data: {
       otpId: otp.id,
       channel: effectiveChannel,
