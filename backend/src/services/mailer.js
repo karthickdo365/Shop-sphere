@@ -46,6 +46,14 @@ export const sendEmail = async (to, subject, html) => {
     console.log('========================================\n');
     return { preview: true };
   }
+  transporter.verify(function (error, success) {
+  if (error) {
+    console.log("SMTP VERIFY ERROR");
+    console.log(error);
+  } else {
+    console.log("SMTP Server is ready");
+  }
+});
 
   try {
     const info = await t.sendMail({ from, to, subject, html });

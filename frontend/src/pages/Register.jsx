@@ -6,17 +6,20 @@ import api from '../utils/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 
 const CHANNELS = [
-  { value: 'EMAIL', label: 'Email', icon: Mail, hint: 'Get OTP via email' },
-  { value: 'SMS', label: 'SMS', icon: Smartphone, hint: 'Get OTP via SMS (requires Twilio)' },
-  { value: 'WHATSAPP', label: 'WhatsApp', icon: MessageSquare, hint: 'Get OTP via WhatsApp (requires Twilio)' },
+  {
+    value: "WHATSAPP",
+    label: "WhatsApp",
+    icon: MessageSquare,
+    hint: "OTP will be sent via WhatsApp",
+  },
 ];
 
 export default function Register() {
   const navigate = useNavigate();
   const { register } = useAuth();
   const [step, setStep] = useState(1); // 1 = details, 2 = OTP verify
-  const [form, setForm] = useState({ name: '', email: '', password: '', phone: '' });
-  const [channel, setChannel] = useState('EMAIL');
+  const [form, setForm] = useState({ name: '',  phone: '' });
+const [channel] = useState("WHATSAPP");
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -39,10 +42,10 @@ export default function Register() {
   // Step 1: send OTP
   const handleSendOtp = async (e) => {
     e.preventDefault();
-    if (form.password.length < 6) {
-      toast.error('Password must be at least 6 characters');
-      return;
-    }
+    // if (form.password.length < 6) {
+    //   toast.error('Password must be at least 6 characters');
+    //   return;
+    // }
     if (channel !== 'EMAIL' && !form.phone) {
       toast.error(`Phone number is required for ${channel}`);
       return;
@@ -150,7 +153,7 @@ await register(payload);
         {step === 1 ? (
           <>
             <h1>Create Account</h1>
-            <p>Join ShopSphere today — verify your email/phone to continue.</p>
+            
             <form onSubmit={handleSendOtp}>
               <div className="form-group">
                 <label className="form-label">Full Name</label>
@@ -161,7 +164,7 @@ await register(payload);
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                 />
               </div>
-              <div className="form-group">
+              {/* <div className="form-group">
                 <label className="form-label">Email</label>
                 <input
                   type="email"
@@ -170,7 +173,7 @@ await register(payload);
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                 />
-              </div>
+              </div> */}
               <div className="form-group">
                 <label className="form-label">Phone (with country code, e.g. +91...)</label>
                 <input
@@ -179,9 +182,11 @@ await register(payload);
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   placeholder="+91 98765 43210"
                 />
-                <p className="hint">Required if you choose SMS or WhatsApp for OTP</p>
+                <p className="hint">
+  OTP will be sent to your WhatsApp number.
+</p>
               </div>
-              <div className="form-group">
+              { /* <div className="form-group">
                 <label className="form-label">Password (min 6 chars)</label>
                 <div className="password-wrap">
                   <input
@@ -201,7 +206,7 @@ await register(payload);
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-              </div>
+              // </div> */}
 
               <div className="form-group">
                 <label className="form-label">Send OTP via</label>
