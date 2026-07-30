@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import prisma from '../config/db.js';
-import { sendOtpEmail } from '../services/mailer.js';
+// import { sendOtpEmail } from '../services/mailer.js';
 import smsService from '../services/sms.js';
 
 const { sendOtpSms, sendOtpWhatsApp, isConfigured: smsConfigured } = smsService;
@@ -37,6 +37,7 @@ if (!phone) {
     message: "Phone number is required",
   });
 }
+const normalizedPhone = normalizePhone(phone);
 
 const code = generateOtp();
 const normalizedPhone = normalizePhone(phone);
@@ -50,8 +51,7 @@ if (!smsConfigured()) {
   });
 }
 
-  const code = generateOtp();
-  const normalizedPhone = normalizePhone(phone);
+  
 
   // Invalidate previous unused OTPs for same email+purpose
   await prisma.otp.updateMany({
@@ -97,7 +97,7 @@ delivery.whatsapp = true;
 
   res.json({
     success: true,
-    message: `OTP sent via ${effectiveChannel}${effectiveChannel !== 'EMAIL' ? ` to ${normalizedPhone}` : ` to ${email}`}. Valid for ${TTL_MINUTES} minutes.`,
+   message: `OTP sent to ${normalizedPhone}. Valid for ${TTL_MINUTES} minutes.`,
     data: {
       otpId: otp.id,
       channel: effectiveChannel,
@@ -124,7 +124,9 @@ if (!phone || !code) {
 }
 
 const normalizedPhone = normalizePhone(phone);
- console.log("VERIFY PHONE:", normalizedPhone);
+
+console.log("VERIFY PHONE:", normalizedPhone);
+
 
 const otp = await prisma.otp.findFirst({
   where: {
