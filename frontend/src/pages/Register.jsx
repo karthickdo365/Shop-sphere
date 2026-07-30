@@ -53,12 +53,12 @@ const [channel] = useState("WHATSAPP");
     setSendingOtp(true);
     try {
       await api.post('/otp/send', {
-        email: form.email,
+        // email: form.email,
         phone: form.phone,
         purpose: 'REGISTER',
         channel,
       });
-      toast.success(`OTP sent via ${channel.toLowerCase()}${channel !== 'EMAIL' && form.phone ? ` to ${form.phone}` : ` to ${form.email}`}`);
+      toast.success(`OTP sent to your WhatsApp.${channel.toLowerCase()}${channel !== 'EMAIL' && form.phone ? ` to ${form.phone}` : ` to ${form.email}`}`);
       setStep(2);
       startResendTimer();
     } catch (err) {
@@ -79,7 +79,7 @@ const [channel] = useState("WHATSAPP");
     setLoading(true);
     try {
       // 1. Verify OTP
-      await api.post('/otp/verify', { email: form.email, code, purpose: 'REGISTER' });
+      await api.post('/otp/verify', {  phone: form.phone, code, purpose: 'REGISTER' });
       // 2. Register account (with otpVerified=true so backend knows email is verified)
       const payload = {
   ...form,
@@ -105,7 +105,7 @@ await register(payload);
     setSendingOtp(true);
     try {
       await api.post('/otp/resend', {
-        email: form.email,
+        // email: form.email,
         phone: form.phone,
         purpose: 'REGISTER',
         channel,
