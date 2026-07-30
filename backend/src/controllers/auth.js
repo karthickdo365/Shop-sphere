@@ -6,13 +6,18 @@ import { sendPasswordResetEmail } from '../services/mailer.js';
 
 export const register = async (req, res) => {
  const { name, phone, otpVerified } = req.body;
+ const normalizedPhone = phone.startsWith("+91")
+  ? phone
+  : `+91${phone}`;
   console.log("========== REGISTER ==========");
 console.log("BODY:", req.body);
 console.log("otpVerified:", otpVerified);
 
   const requireOtp = (process.env.OTP_REQUIRE_FOR_REGISTER || 'true') !== 'false';
 
-  const existing = await prisma.user.findUnique({ where: { phone } });
+ const existing = await prisma.user.findUnique({
+  where: { phone: normalizedPhone },
+});
   if (existing) {
     return res.status(409).json({ success: false, message: "Phone number already registered" });
   }
@@ -28,9 +33,9 @@ message: "Please verify your WhatsApp OTP first.",
       });
     }
     // Confirm a verified OTP exists in DB for this email+purpose=REGISTER
-   const verified = await prisma.otp.findFirst({
+ const verified = await prisma.otp.findFirst({
   where: {
-    phone,
+    phone: normalizedPhone,
     purpose: "REGISTER",
     verified: true,
   },
@@ -38,8 +43,9 @@ message: "Please verify your WhatsApp OTP first.",
     createdAt: "desc",
   },
 });
+console.log("VERIFIED OTP:", verified);
 
-console.log("Verified OTP Record:", verified);
+
 
     if (!verified) {
       return res.status(400).json({
@@ -55,7 +61,11 @@ console.log("Verified OTP Record:", verified);
 
   // const hashed = await bcrypt.hash(password, 10);
   const user = await prisma.user.create({
-    data: { name, phone, isEmailVerified },
+   data: {
+  name,
+  phone: normalizedPhone,
+  isEmailVerified,
+},
     select: { id: true, name: true,  role: true, phone: true, },
   });
   // Auto-create cart
