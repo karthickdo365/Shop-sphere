@@ -15,10 +15,10 @@ datasource db {
 // =========================
 model User {
   id              String   @id @default(cuid())
-  email           String   @unique
-  password        String
+  email           String? @unique
+  password        String?
   name            String
-  phone           String?
+  phone           String @unique
   role            Role     @default(CUSTOMER)
   isEmailVerified Boolean  @default(false)
   createdAt       DateTime @default(now())
@@ -302,11 +302,11 @@ model Otp {
   id        String   @id @default(cuid())
   userId    String?
   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  email     String
-  phone     String?
+  email     String?
+  phone     String
   code      String   // 6-digit OTP
   purpose   String   @default("REGISTER") // REGISTER | LOGIN | RESET
-  channel   String   @default("EMAIL")    // EMAIL | SMS | WHATSAPP
+ channel String @default("WHATSAPP")
   verified  Boolean  @default(false)
   expiresAt DateTime
   usedAt    DateTime?

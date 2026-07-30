@@ -29,40 +29,46 @@ const normalizePhone = (p) => {
  * (and the OTP is still logged to the backend console).
  */
 export const sendOtp = async (req, res) => {
-  const { email, phone, purpose = 'REGISTER', channel } = req.body;
-  if (!email) {
-    return res.status(400).json({ success: false, message: 'Email is required' });
-  }
+ const { phone, purpose = "REGISTER", channel } = req.body;
 
-  // Determine effective channel
-  let effectiveChannel = channel || process.env.OTP_CHANNEL || 'EMAIL';
-  if ((effectiveChannel === 'SMS' || effectiveChannel === 'WHATSAPP')) {
-    if (!phone) {
-      return res.status(400).json({
-        success: false,
-        message: `Phone number is required for ${effectiveChannel} channel`,
-      });
-    }
-    if (!smsConfigured()) {
-      console.warn(`[otp] ${effectiveChannel} requested but Twilio not configured — falling back to EMAIL`);
-      effectiveChannel = 'EMAIL';
-    }
-  }
+if (!phone) {
+  return res.status(400).json({
+    success: false,
+    message: "Phone number is required",
+  });
+}
+
+const code = generateOtp();
+const normalizedPhone = normalizePhone(phone);
+
+ const effectiveChannel = "WHATSAPP";
+
+if (!smsConfigured()) {
+  return res.status(500).json({
+    success: false,
+    message: "WhatsApp service is not configured",
+  });
+}
 
   const code = generateOtp();
   const normalizedPhone = normalizePhone(phone);
 
   // Invalidate previous unused OTPs for same email+purpose
   await prisma.otp.updateMany({
-    where: { email, purpose, verified: false, usedAt: null },
+   where: {
+    phone: normalizedPhone,
+    purpose,
+    verified: false,
+    usedAt: null
+},
     data: { usedAt: new Date() },
   });
 
   // Create new OTP record
   const otp = await prisma.otp.create({
     data: {
-      email,
-      phone: normalizedPhone,
+     email: null,
+phone: normalizedPhone,
       code,
       purpose,
       channel: effectiveChannel,
@@ -73,16 +79,9 @@ export const sendOtp = async (req, res) => {
   // Send via chosen channel
   let delivery = {};
   try {
-    if (effectiveChannel === 'EMAIL') {
-      await sendOtpEmail(email, code, undefined, purpose);
-      delivery.email = true;
-    } else if (effectiveChannel === 'SMS') {
-      await sendOtpSms(normalizedPhone, code, purpose);
-      delivery.sms = true;
-    } else if (effectiveChannel === 'WHATSAPP') {
-      await sendOtpWhatsApp(normalizedPhone, code, purpose);
-      delivery.whatsapp = true;
-    }
+ await sendOtpWhatsApp(normalizedPhone, code, purpose);
+
+delivery.whatsapp = true;
   } catch (err) {
     console.error('[otp] Delivery failed:', err.message);
     return res.status(500).json({
@@ -92,7 +91,9 @@ export const sendOtp = async (req, res) => {
   }
 
   // For dev: log the OTP so the user can see it in console
-  console.log(`\n[OTP] ${purpose} OTP for ${email} via ${effectiveChannel}: ${code} (expires in ${TTL_MINUTES} min)\n`);
+ console.log(
+`[OTP] ${purpose} OTP for ${normalizedPhone}: ${code}`
+);
 
   res.json({
     success: true,
@@ -113,29 +114,29 @@ export const sendOtp = async (req, res) => {
  * On success, returns a token + marks OTP as verified.
  */
 export const verifyOtp = async (req, res) => {
-  const { email, code, purpose = "REGISTER" } = req.body;
+ const { phone, code, purpose = "REGISTER" } = req.body;
 
-  if (!email || !code) {
-    return res.status(400).json({
-      success: false,
-      message: "Email and code are required",
-    });
-  }
-
-  console.log("VERIFY BODY:", req.body);
-
-  const otp = await prisma.otp.findFirst({
-    where: {
-      email,
-      purpose,
-      usedAt: null,
-      verified: false,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
+if (!phone || !code) {
+  return res.status(400).json({
+    success: false,
+    message: "Phone number and OTP are required",
   });
+}
 
+const normalizedPhone = normalizePhone(phone);
+ console.log("VERIFY PHONE:", normalizedPhone);
+
+const otp = await prisma.otp.findFirst({
+  where: {
+    phone: normalizedPhone,
+    purpose,
+    usedAt: null,
+    verified: false,
+  },
+  orderBy: {
+    createdAt: "desc",
+  },
+});
   console.log("OTP FOUND:", otp);
 
   if (!otp) {
@@ -194,27 +195,35 @@ export const verifyOtp = async (req, res) => {
   res.json({
     success: true,
     message: "OTP verified successfully",
-    data: {
-      verified: true,
-      email,
-      purpose,
-    },
+   data: {
+  verified: true,
+  phone: normalizedPhone,
+  purpose,
+},
   });
 };
 /**
  * Resend an OTP (rate-limited: min 30s between resends)
  */
 export const resendOtp = async (req, res) => {
-  const { email, phone, purpose = 'REGISTER', channel } = req.body;
-  if (!email) {
-    return res.status(400).json({ success: false, message: 'Email is required' });
+  const { name, phone, purpose = 'REGISTER', channel } = req.body;
+  if (!phone) {
+    return res.status(400).json({ success: false, message: 'phone number is required' });
   }
 
   // Check if a recent OTP was sent in last 30 seconds
-  const recent = await prisma.otp.findFirst({
-    where: { email, purpose, createdAt: { gt: new Date(Date.now() - 30 * 1000) } },
-    orderBy: { createdAt: 'desc' },
-  });
+ const recent = await prisma.otp.findFirst({
+  where: {
+    phone: normalizedPhone,
+    purpose,
+    createdAt: {
+      gt: new Date(Date.now() - 30 * 1000),
+    },
+  },
+  orderBy: {
+    createdAt: "desc",
+  },
+});
   if (recent) {
     return res.status(429).json({
       success: false,
@@ -223,6 +232,10 @@ export const resendOtp = async (req, res) => {
   }
 
   // Delegate to sendOtp
-  req.body = { email, phone, purpose, channel };
+ req.body = {
+  phone: normalizedPhone,
+  purpose,
+  channel,
+};
   return sendOtp(req, res);
 };

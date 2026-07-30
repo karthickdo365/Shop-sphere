@@ -5,16 +5,16 @@ import { signToken } from '../middleware/auth.js';
 import { sendPasswordResetEmail } from '../services/mailer.js';
 
 export const register = async (req, res) => {
-  const { name, email, password, phone, otpVerified } = req.body;
+ const { name, phone, otpVerified } = req.body;
   console.log("========== REGISTER ==========");
 console.log("BODY:", req.body);
 console.log("otpVerified:", otpVerified);
 console.log("email:", email);
   const requireOtp = (process.env.OTP_REQUIRE_FOR_REGISTER || 'true') !== 'false';
 
-  const existing = await prisma.user.findUnique({ where: { email } });
+  const existing = await prisma.user.findUnique({ where: { phone } });
   if (existing) {
-    return res.status(409).json({ success: false, message: 'Email already registered' });
+    return res.status(409).json({ success: false, message: "Phone number already registered" });
   }
 
   // If OTP is required, ensure the email was verified via /api/otp/verify
@@ -23,14 +23,14 @@ console.log("email:", email);
     if (!otpVerified) {
       return res.status(400).json({
         success: false,
-        message: 'OTP verification required. Please verify your email first.',
+message: "Please verify your WhatsApp OTP first.",
         requiresOtp: true,
       });
     }
     // Confirm a verified OTP exists in DB for this email+purpose=REGISTER
    const verified = await prisma.otp.findFirst({
   where: {
-    email,
+    phone,
     purpose: "REGISTER",
     verified: true,
   },
@@ -44,7 +44,7 @@ console.log("Verified OTP Record:", verified);
     if (!verified) {
       return res.status(400).json({
         success: false,
-        message: 'No verified OTP found. Please verify your email first.',
+      message: "No verified WhatsApp OTP found.",
         requiresOtp: true,
       });
     }
@@ -53,10 +53,10 @@ console.log("Verified OTP Record:", verified);
     isEmailVerified = true;
   }
 
-  const hashed = await bcrypt.hash(password, 10);
+  // const hashed = await bcrypt.hash(password, 10);
   const user = await prisma.user.create({
-    data: { name, email, password: hashed, phone, isEmailVerified },
-    select: { id: true, name: true, email: true, role: true, phone: true, isEmailVerified: true },
+    data: { name, phone, isEmailVerified },
+    select: { id: true, name: true,  role: true, phone: true, },
   });
   // Auto-create cart
   await prisma.cart.create({ data: { userId: user.id } });
@@ -66,15 +66,25 @@ console.log("Verified OTP Record:", verified);
 };
 
 export const login = async (req, res) => {
-  const { email, password } = req.body;
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) {
-    return res.status(401).json({ success: false, message: 'Invalid credentials' });
-  }
-  const ok = await bcrypt.compare(password, user.password);
-  if (!ok) {
-    return res.status(401).json({ success: false, message: 'Invalid credentials' });
-  }
+ const { phone } = req.body;
+
+if (!phone) {
+  return res.status(400).json({
+    success: false,
+    message: "Phone number is required",
+  });
+}
+
+const user = await prisma.user.findUnique({
+  where: { phone },
+});
+
+if (!user) {
+  return res.status(404).json({
+    success: false,
+    message: "Account not found",
+  });
+}
   const token = signToken(user.id);
   res.json({
     success: true,
@@ -82,10 +92,9 @@ export const login = async (req, res) => {
       user: {
         id: user.id,
         name: user.name,
-        email: user.email,
-        role: user.role,
+       role: user.role,
         phone: user.phone,
-        isEmailVerified: user.isEmailVerified,
+        
       },
       token,
     },
