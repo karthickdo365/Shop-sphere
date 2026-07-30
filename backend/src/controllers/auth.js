@@ -8,11 +8,18 @@ import {
 } from "../services/mailer.js";
 
 export const register = async (req, res) => {
+  console.log("========== REGISTER ==========");
+  console.log("BODY:", req.body);
+
   const { name, email, password } = req.body;
+
+  console.log("EMAIL:", email);
 
   const existing = await prisma.user.findUnique({
     where: { email },
   });
+
+  // rest of your code...
 
   if (existing) {
     return res.status(409).json({
