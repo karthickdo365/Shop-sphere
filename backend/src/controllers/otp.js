@@ -40,7 +40,7 @@ if (!phone) {
 const normalizedPhone = normalizePhone(phone);
 
 const code = generateOtp();
-const normalizedPhone = normalizePhone(phone);
+
 
  const effectiveChannel = "WHATSAPP";
 
@@ -212,6 +212,7 @@ export const resendOtp = async (req, res) => {
   if (!phone) {
     return res.status(400).json({ success: false, message: 'phone number is required' });
   }
+  const normalizedPhone = normalizePhone(phone);
 
   // Check if a recent OTP was sent in last 30 seconds
  const recent = await prisma.otp.findFirst({

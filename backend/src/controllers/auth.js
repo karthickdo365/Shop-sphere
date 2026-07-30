@@ -9,7 +9,7 @@ export const register = async (req, res) => {
   console.log("========== REGISTER ==========");
 console.log("BODY:", req.body);
 console.log("otpVerified:", otpVerified);
-console.log("email:", email);
+
   const requireOtp = (process.env.OTP_REQUIRE_FOR_REGISTER || 'true') !== 'false';
 
   const existing = await prisma.user.findUnique({ where: { phone } });
