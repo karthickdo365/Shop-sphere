@@ -43,6 +43,14 @@ export const sendEmail = async (to, subject, html) => {
   const t = getTransporter();
 
   const from = `"ShopSphere" <${process.env.SMTP_USER}>`;
+  console.log("===== SMTP CONFIG =====");
+console.log({
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: process.env.SMTP_SECURE,
+  user: process.env.SMTP_USER,
+  passLength: process.env.SMTP_PASS?.length,
+});
 
   if (!t) {
     console.log("=================================");
@@ -52,22 +60,21 @@ export const sendEmail = async (to, subject, html) => {
     console.log("=================================");
     return;
   }
+try {
+  console.log("Trying to send email...");
 
-  try {
-    await t.verify();
-    console.log("✅ SMTP Server Connected");
+  const info = await t.sendMail({
+    from,
+    to,
+    subject,
+    html,
+  });
 
-    const info = await t.sendMail({
-      from,
-      to,
-      subject,
-      html,
-    });
+  console.log("✅ Email Sent");
+  console.log(info.messageId);
 
-    console.log("✅ Email Sent");
-    console.log(info.messageId);
+  return info;
 
-    return info;
   } catch (err) {
     console.error("========== EMAIL ERROR ==========");
     console.error(err);
