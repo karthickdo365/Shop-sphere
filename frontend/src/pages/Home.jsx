@@ -244,6 +244,50 @@ export default function Home() {
           .hero-content h1 { font-size: 28px; }
           .promo-content h3 { font-size: 20px; }
         }
+          .trust-marquee{
+  width:100%;
+  overflow:hidden;
+  background:#fff;
+  border-top:1px solid var(--color-border);
+  border-bottom:1px solid var(--color-border);
+  padding:18px 0;
+  margin-top:40px;
+}
+
+.marquee-track{
+  display:flex;
+  width:max-content;
+  animation:scrollTrust 25s linear infinite;
+}
+
+.trust-marquee:hover .marquee-track{
+  animation-play-state:paused;
+}
+
+.trust-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:280px;
+  padding:0 30px;
+  font-weight:600;
+  color:#333;
+  white-space:nowrap;
+}
+
+.trust-icon{
+  font-size:24px;
+  color:var(--color-accent);
+}
+
+@keyframes scrollTrust{
+  from{
+    transform:translateX(0);
+  }
+  to{
+    transform:translateX(-50%);
+  }
+}
       `}</style>
     </div>
   );
