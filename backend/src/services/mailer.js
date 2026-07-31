@@ -20,13 +20,21 @@ const getTransporter = () => {
       pass: process.env.SMTP_PASS,
     },
 
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
+  connectionTimeout: 30000,
+greetingTimeout: 30000,
+socketTimeout: 30000,
   });
 
   return transporter;
 };
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("SMTP VERIFY FAILED");
+    console.error(error);
+  } else {
+    console.log("SMTP READY");
+  }
+});
 /**
  * Send an email. If SMTP is not configured, the message is logged instead.
  * @param {string} to
@@ -35,7 +43,7 @@ const getTransporter = () => {
  */
 export const sendEmail = async (to, subject, html) => {
   const t = getTransporter();
-  const from = process.env.SMTP_FROM || 'ShopSphere <noreply@shopsphere.com>';
+ const from = `"ShopSphere" <${process.env.SMTP_USER}>`;
 
   if (!t) {
     console.log('\n========================================');
