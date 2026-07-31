@@ -27,14 +27,16 @@ socketTimeout: 30000,
 
   return transporter;
 };
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("SMTP VERIFY FAILED");
-    console.error(error);
-  } else {
-    console.log("SMTP READY");
-  }
-});
+if (t) {
+  t.verify(function (error, success) {
+    if (error) {
+      console.log("SMTP VERIFY ERROR");
+      console.log(error);
+    } else {
+      console.log("SMTP Server is ready");
+    }
+  });
+}
 /**
  * Send an email. If SMTP is not configured, the message is logged instead.
  * @param {string} to
