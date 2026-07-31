@@ -93,8 +93,7 @@ export default function Home() {
         </section>
       )}
 
-      {/* Trust Marquee */}
-<section className="trust-marquee">
+   <section className="trust-marquee">
   <div className="marquee-track">
 
     {[
@@ -105,7 +104,6 @@ export default function Home() {
       "24/7 Customer Support",
       "Best Price Guarantee",
 
-      // Duplicate for seamless scrolling
       "30-Day Easy Returns",
       "Premium Quality Products",
       "100% Secure Payments",
@@ -348,7 +346,7 @@ export default function Home() {
   }
 
 }
-      `}</style>
+      `   }</style>
     </div>
   );
 }
