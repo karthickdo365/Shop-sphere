@@ -1,4 +1,4 @@
-// Prisma schema for EN3 Fashions e-commerce clone
+
 // Docs: https://pris.ly/d/prisma-schema
 
 generator client {
