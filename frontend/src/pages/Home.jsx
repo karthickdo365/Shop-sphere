@@ -93,29 +93,34 @@ export default function Home() {
         </section>
       )}
 
-      {/* Trust Badges */}
-      <section className="container trust-badges">
-        <div className="trust-item">
-          <div className="trust-icon">&#8634;</div>
-          <h4>30-Day Returns</h4>
-          <p>Easy and hassle-free returns</p>
-        </div>
-        <div className="trust-item">
-          <div className="trust-icon">&#9733;</div>
-          <h4>Premium Quality</h4>
-          <p>Crafted from finest fabrics</p>
-        </div>
-        <div className="trust-item">
-          <div className="trust-icon">&#9986;</div>
-          <h4>Secure Payments</h4>
-          <p>100% secure checkout</p>
-        </div>
-        <div className="trust-item">
-          <div className="trust-icon">&#9992;</div>
-          <h4>Fast Shipping</h4>
-          <p>Dispatched within 24 hours</p>
-        </div>
-      </section>
+      {/* Trust Marquee */}
+<section className="trust-marquee">
+  <div className="marquee-track">
+
+    {[
+      "30-Day Easy Returns",
+      "Premium Quality Products",
+      "100% Secure Payments",
+      "Fast Shipping Across India",
+      "24/7 Customer Support",
+      "Best Price Guarantee",
+
+      // Duplicate for seamless scrolling
+      "30-Day Easy Returns",
+      "Premium Quality Products",
+      "100% Secure Payments",
+      "Fast Shipping Across India",
+      "24/7 Customer Support",
+      "Best Price Guarantee",
+    ].map((text, index) => (
+      <div className="trust-item" key={index}>
+        <span className="trust-icon">✔</span>
+        <span>{text}</span>
+      </div>
+    ))}
+
+  </div>
+</section>
 
       <style>{`
         .hero-section {
