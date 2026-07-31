@@ -13,6 +13,10 @@ const getTransporter = () => {
     console.warn("[mailer] SMTP environment variables are missing.");
     return null;
   }
+  console.log("HOST:", process.env.SMTP_HOST);
+console.log("PORT:", process.env.SMTP_PORT);
+console.log("USER:", process.env.SMTP_USER);
+console.log("SECURE:", process.env.SMTP_SECURE);
 
   transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
