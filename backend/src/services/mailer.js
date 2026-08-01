@@ -1,88 +1,63 @@
-import nodemailer from "nodemailer";
+import SibApiV3Sdk from "@getbrevo/brevo";
 
-let transporter = null;
+let apiInstance = null;
 
-const getTransporter = () => {
-  if (transporter) return transporter;
+const getBrevoInstance = () => {
+  if (apiInstance) return apiInstance;
 
-  if (
-    !process.env.SMTP_HOST ||
-    !process.env.SMTP_USER ||
-    !process.env.SMTP_PASS
-  ) {
-    console.warn("[mailer] SMTP environment variables are missing.");
+  if (!process.env.BREVO_API_KEY || !process.env.SMTP_USER) {
+    console.warn("[mailer] BREVO_API_KEY or SMTP_USER is missing.");
     return null;
   }
-  console.log("HOST:", process.env.SMTP_HOST);
-console.log("PORT:", process.env.SMTP_PORT);
-console.log("USER:", process.env.SMTP_USER);
-console.log("SECURE:", process.env.SMTP_SECURE);
 
-  transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
-    secure: process.env.SMTP_SECURE === "true",
+  apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+  apiInstance.setApiKey(
+    SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey,
+    process.env.BREVO_API_KEY
+  );
 
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-
-    connectionTimeout: 30000,
-    greetingTimeout: 30000,
-    socketTimeout: 30000,
-  });
-
-  return transporter;
+  return apiInstance;
 };
 
 // ===============================
 // Send Email
 // ===============================
 export const sendEmail = async (to, subject, html) => {
-  const t = getTransporter();
+  const api = getBrevoInstance();
 
-  const from = `"ShopSphere" <${process.env.SMTP_USER}>`;
-  console.log("===== SMTP CONFIG =====");
-console.log({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  secure: process.env.SMTP_SECURE,
-  user: process.env.SMTP_USER,
-  passLength: process.env.SMTP_PASS?.length,
-});
+  console.log("===== BREVO CONFIG =====");
+  console.log({
+    sender: process.env.SMTP_USER,
+    hasApiKey: !!process.env.BREVO_API_KEY,
+  });
 
-  if (!t) {
+  if (!api) {
     console.log("=================================");
-    console.log("SMTP NOT CONFIGURED");
+    console.log("BREVO NOT CONFIGURED");
     console.log("TO:", to);
     console.log("SUBJECT:", subject);
     console.log("=================================");
     return;
   }
-try {
-  console.log("Trying to send email...");
 
-  const info = await t.sendMail({
-    from,
-    to,
-    subject,
-    html,
-  });
+  const email = new SibApiV3Sdk.SendSmtpEmail();
+  email.sender = { name: "ShopSphere", email: process.env.SMTP_USER };
+  email.to = [{ email: to }];
+  email.subject = subject;
+  email.htmlContent = html;
 
-  console.log("✅ Email Sent");
-  console.log(info.messageId);
+  try {
+    console.log("Trying to send email...");
 
-  return info;
+    const info = await api.sendTransacEmail(email);
 
+    console.log("✅ Email Sent");
+    console.log(info.body?.messageId);
+
+    return info;
   } catch (err) {
     console.error("========== EMAIL ERROR ==========");
-    console.error(err);
-
-    console.log("code:", err.code);
-    console.log("response:", err.response);
-    console.log("responseCode:", err.responseCode);
-    console.log("command:", err.command);
+    console.error(err.response?.body || err.message);
 
     throw err;
   }
