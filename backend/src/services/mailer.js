@@ -1,64 +1,67 @@
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const SibApiV3Sdk = require("@getbrevo/brevo");
+const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
 
-let apiInstance = null;
-
-const getBrevoInstance = () => {
-  if (apiInstance) return apiInstance;
-
+const sendViaBrevo = async ({ to, subject, html }) => {
   if (!process.env.BREVO_API_KEY || !process.env.SMTP_USER) {
     console.warn("[mailer] BREVO_API_KEY or SMTP_USER is missing.");
     return null;
   }
 
-  apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-  apiInstance.setApiKey(
-    SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey,
-    process.env.BREVO_API_KEY
-  );
+  const response = await fetch(BREVO_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "api-key": process.env.BREVO_API_KEY,
+    },
+    body: JSON.stringify({
+      sender: { name: "ShopSphere", email: process.env.SMTP_USER },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+    }),
+  });
 
-  return apiInstance;
+  const data = await response.json();
+
+  if (!response.ok) {
+    const err = new Error(data.message || "Brevo API error");
+    err.details = data;
+    throw err;
+  }
+
+  return data;
 };
+
 // ===============================
 // Send Email
 // ===============================
 export const sendEmail = async (to, subject, html) => {
-  const api = getBrevoInstance();
-
   console.log("===== BREVO CONFIG =====");
   console.log({
     sender: process.env.SMTP_USER,
     hasApiKey: !!process.env.BREVO_API_KEY,
   });
 
-  if (!api) {
-    console.log("=================================");
-    console.log("BREVO NOT CONFIGURED");
-    console.log("TO:", to);
-    console.log("SUBJECT:", subject);
-    console.log("=================================");
-    return;
-  }
-
-  const email = new SibApiV3Sdk.SendSmtpEmail();
-  email.sender = { name: "ShopSphere", email: process.env.SMTP_USER };
-  email.to = [{ email: to }];
-  email.subject = subject;
-  email.htmlContent = html;
-
   try {
     console.log("Trying to send email...");
 
-    const info = await api.sendTransacEmail(email);
+    const info = await sendViaBrevo({ to, subject, html });
+
+    if (!info) {
+      console.log("=================================");
+      console.log("BREVO NOT CONFIGURED");
+      console.log("TO:", to);
+      console.log("SUBJECT:", subject);
+      console.log("=================================");
+      return;
+    }
 
     console.log("✅ Email Sent");
-    console.log(info.body?.messageId);
+    console.log(info.messageId);
 
     return info;
   } catch (err) {
     console.error("========== EMAIL ERROR ==========");
-    console.error(err.response?.body || err.message);
+    console.error(err.details || err.message);
 
     throw err;
   }
