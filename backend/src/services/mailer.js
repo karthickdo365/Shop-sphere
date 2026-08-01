@@ -1,5 +1,6 @@
-
-import * as SibApiV3Sdk from "@getbrevo/brevo";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const SibApiV3Sdk = require("@getbrevo/brevo");
 
 let apiInstance = null;
 
@@ -19,7 +20,6 @@ const getBrevoInstance = () => {
 
   return apiInstance;
 };
-
 // ===============================
 // Send Email
 // ===============================
