@@ -91,7 +91,7 @@ export default function Checkout() {
       }
 
       await clearCart();
-      navigate('/orders');
+      navigate('/order-success');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to place order');
     } finally {

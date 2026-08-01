@@ -4,6 +4,7 @@ import api from '../utils/api.js';
 import ProductGrid from '../components/ProductGrid.jsx';
 import { formatPrice, getFirstImage } from '../utils/helpers.js';
 import BannerCarousel from '../components/BannerCarousel.jsx';
+  import OrderSuccess from "./pages/OrderSuccess";
 
 export default function Home() {
   const [categories, setCategories] = useState([]);

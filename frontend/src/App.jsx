@@ -32,6 +32,7 @@ import ReturnsPolicy from "./pages/ReturnsPolicy.jsx";
 import ShippingPolicy from "./pages/ShippingPolicy.jsx";
 import Privacy from "./pages/Privacy.jsx";
 import TermsPolicy from "./pages/TermsPolicy.jsx";
+import OrderSuccess from "./pages/OrderSuccess";
 
 
 
@@ -66,9 +67,12 @@ export default function App() {
       <main className="main-content">
         <Routes>
           <Route path="/" element={<Home />} />
+        
+          <Route path="/order-success"element={<OrderSuccess />}/>
           <Route path="/category/:slug" element={<CategoryPage />} />
           <Route path="/product/:slug" element={<ProductDetail />} />
           <Route path="/about" element={<AboutUs brandName="ShopSphere" />} />
+          <Route path="/order-success" element={<OrderSuccess />} />
           <Route path='/contact' element={<Contact/>}/>
           <Route path="/policy/returns" element={<ReturnsPolicy />} />
           <Route path="/policy/shipping" element={<ShippingPolicy />} />
