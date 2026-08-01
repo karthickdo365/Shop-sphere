@@ -13,7 +13,7 @@ export default function AdminOrders() {
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  // const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState(null);
 
@@ -22,7 +22,7 @@ export default function AdminOrders() {
     try {
       const params = new URLSearchParams({ page, limit: 20 });
       if (search) params.set('q', search);
-      // if (statusFilter) params.set('status', statusFilter);
+      if (statusFilter) params.set('status', statusFilter);
       const r = await api.get(`/orders/admin/all?${params.toString()}`);
       setOrders(r.data.data);
       setStats(r.data.stats);
@@ -36,7 +36,7 @@ export default function AdminOrders() {
 
   useEffect(() => {
     fetchOrders();
-  }, [page, search, ]);
+  }, [page, search, statusFilter]);
 
   const updateStatus = async (id, status, paymentStatus) => {
     try {
@@ -91,17 +91,36 @@ export default function AdminOrders() {
           <input
             placeholder="Search by order # or customer..."
             value={search}
-            onChange={(e) => { setPage(1); setSearch(e.target.value); }}
+            onChange={(e) => {
+              setPage(1);
+              setSearch(e.target.value);
+            }}
           />
         </div>
-        {/* <select
-          className="filter-select"
-          value={statusFilter}
-          onChange={(e) => { setPage(1); setStatusFilter(e.target.value); }}
-        >
-          <option value="">All Statuses</option>
-          {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-        </select> */}
+
+        <div className="status-filter-buttons">
+          <button
+            className={statusFilter === '' ? 'active' : ''}
+            onClick={() => {
+              setStatusFilter('');
+              setPage(1);
+            }}
+          >
+            ALL
+          </button>
+          {STATUSES.map((status) => (
+            <button
+              key={status}
+              className={statusFilter === status ? 'active' : ''}
+              onClick={() => {
+                setStatusFilter(status);
+                setPage(1);
+              }}
+            >
+              {status}
+            </button>
+          ))}
+        </div>
       </div>
 
       {loading ? (
@@ -139,19 +158,9 @@ export default function AdminOrders() {
                       <span className={`status-pill pay-${o.paymentStatus.toLowerCase()}`}>{o.paymentStatus}</span>
                     </td>
                     <td>
-                      {/* <div className="status-select-wrap">
-                        <select
-                          value={o.status}
-                          onChange={(e) => updateStatus(o.id, e.target.value)}
-                          className={`status-select status-${o.status.toLowerCase()}`}
-                        >
-                          {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                        <ChevronDown size={14} className="chevron" />
-                      </div> */}
                       <span className={`status-pill status-${o.status.toLowerCase()}`}>
-  {o.status}
-</span>
+                        {o.status}
+                      </span>
                     </td>
                     <td>{new Date(o.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
                     <td>
@@ -206,32 +215,27 @@ export default function AdminOrders() {
               <div className="drawer-section">
                 <h4>Items</h4>
                 <ul className="order-items">
-                  {selected.items?.map((i) => {
-  console.log(i);
+                  {selected.items?.map((i) => (
+                    <li key={i.id}>
+                      <img
+                        src={i.image || "https://via.placeholder.com/70"}
+                        alt={i.name}
+                        className="oi-image"
+                      />
 
-  return (
-    <li key={i.id}>
-      <img
-        src={i.image || "https://via.placeholder.com/70"}
-        alt={i.name}
-        className="oi-image"
-      />
+                      <div className="oi-info">
+                        <p className="oi-name">{i.name}</p>
 
-      <div className="oi-info">
-        <p className="oi-name">{i.name}</p>
+                        <p className="oi-variant">
+                          {i.size} · {i.color} · Qty {i.quantity}
+                        </p>
+                      </div>
 
-        <p className="oi-variant">
-          {i.size} · {i.color} · Qty {i.quantity}
-        </p>
-      </div>
-
-      <p className="oi-price">
-        {formatPrice(i.price * i.quantity)}
-      </p>
-    </li>
-  );
-})}
-                
+                      <p className="oi-price">
+                        {formatPrice(i.price * i.quantity)}
+                      </p>
+                    </li>
+                  ))}
                 </ul>
               </div>
 
@@ -328,12 +332,40 @@ export default function AdminOrders() {
         .stat-mini.warn { border-left: 3px solid var(--color-warning); }
         .stat-mini .lbl { font-size: 11px; color: var(--color-text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
         .stat-mini .val { font-size: 20px; font-weight: 700; }
-        .toolbar {
-          display: flex;
-          gap: 12px;
-          margin-bottom: 16px;
-          flex-wrap: wrap;
-        }
+      .toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  flex-wrap:nowrap;
+}
+  .status-filter-buttons{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:nowrap;
+}
+
+.status-filter-buttons button{
+  padding:8px 16px;
+  border:none;
+  border-radius:20px;
+  background:#f3f4f6;
+  cursor:pointer;
+  font-size:13px;
+  font-weight:600;
+  transition:.2s;
+  white-space:nowrap;
+}
+
+.status-filter-buttons button:hover{
+  background:#e5e7eb;
+}
+
+.status-filter-buttons button.active{
+  background:#ef4444;
+  color:#fff;
+}
         .search-box {
           display: flex;
           align-items: center;
