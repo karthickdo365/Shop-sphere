@@ -72,7 +72,7 @@ export default function App() {
           <Route path="/category/:slug" element={<CategoryPage />} />
           <Route path="/product/:slug" element={<ProductDetail />} />
           <Route path="/about" element={<AboutUs brandName="ShopSphere" />} />
-          <Route path="/order-success" element={<OrderSuccess />} />
+        
           <Route path='/contact' element={<Contact/>}/>
           <Route path="/policy/returns" element={<ReturnsPolicy />} />
           <Route path="/policy/shipping" element={<ShippingPolicy />} />
