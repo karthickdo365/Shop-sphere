@@ -332,27 +332,43 @@ export default function AdminOrders() {
         .stat-mini.warn { border-left: 3px solid var(--color-warning); }
         .stat-mini .lbl { font-size: 11px; color: var(--color-text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
         .stat-mini .val { font-size: 20px; font-weight: 700; }
-      .toolbar {
+ .toolbar {
   display: flex;
-  flex-direction: column;
-  gap: 14px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  padding: 9px 14px;
+  border-radius: 8px;
+  flex: 1;
+  min-width: 220px;
+  max-width: 340px;
 }
 
 .status-filter-buttons {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .status-filter-buttons button {
-  padding: 7px 16px;
+  padding: 7px 14px;
   border: 1px solid var(--color-border);
   border-radius: 20px;
   background: #fff;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--color-text-light);
   letter-spacing: 0.3px;
@@ -370,18 +386,6 @@ export default function AdminOrders() {
   background: #ef4444;
   color: #fff;
   border-color: #ef4444;
-}
-
-.search-box {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #fff;
-  border: 1px solid var(--color-border);
-  padding: 9px 14px;
-  border-radius: 8px;
-  width: 100%;
-  max-width: 360px;
 }
         .search-box input { flex: 1; border: none; outline: none; background: transparent; font-size: 14px; }
         .filter-select {
