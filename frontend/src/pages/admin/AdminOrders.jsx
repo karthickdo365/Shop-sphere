@@ -332,51 +332,57 @@ export default function AdminOrders() {
         .stat-mini.warn { border-left: 3px solid var(--color-warning); }
         .stat-mini .lbl { font-size: 11px; color: var(--color-text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
         .stat-mini .val { font-size: 20px; font-weight: 700; }
-      .toolbar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:20px;
-  flex-wrap:nowrap;
-}
-  .status-filter-buttons{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  flex-wrap:nowrap;
+      .toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 20px;
 }
 
-.status-filter-buttons button{
-  padding:8px 16px;
-  border:none;
-  border-radius:20px;
-  background:#f3f4f6;
-  cursor:pointer;
-  font-size:13px;
-  font-weight:600;
-  transition:.2s;
-  white-space:nowrap;
+.status-filter-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.status-filter-buttons button:hover{
-  background:#e5e7eb;
+.status-filter-buttons button {
+  padding: 7px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-light);
+  letter-spacing: 0.3px;
+  transition: all 0.15s;
+  white-space: nowrap;
 }
 
-.status-filter-buttons button.active{
-  background:#ef4444;
-  color:#fff;
+.status-filter-buttons button:hover {
+  border-color: #d1d5db;
+  background: #f9fafb;
+  color: var(--color-text);
 }
-        .search-box {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background: #fff;
-          border: 1px solid var(--color-border);
-          padding: 8px 14px;
-          border-radius: 8px;
-          flex: 1;
-          max-width: 360px;
-        }
+
+.status-filter-buttons button.active {
+  background: #ef4444;
+  color: #fff;
+  border-color: #ef4444;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  padding: 9px 14px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 360px;
+}
         .search-box input { flex: 1; border: none; outline: none; background: transparent; font-size: 14px; }
         .filter-select {
           padding: 8px 12px;
