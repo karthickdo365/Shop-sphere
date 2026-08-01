@@ -9,13 +9,7 @@ import { formatPrice } from '../utils/helpers.js';
 
 export default function Checkout() {
   const navigate = useNavigate();
-  useEffect(() => {
-  const timer = setTimeout(() => {
-    navigate("/orders");
-  }, 2000);
-
-  return () => clearTimeout(timer);
-}, [navigate]);
+  
   const location = useLocation();
   const { user } = useAuth();
   const { cart, clearCart } = useCart();
