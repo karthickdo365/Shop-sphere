@@ -1,4 +1,5 @@
-import SibApiV3Sdk from "@getbrevo/brevo";
+
+import * as SibApiV3Sdk from "@getbrevo/brevo";
 
 let apiInstance = null;
 
