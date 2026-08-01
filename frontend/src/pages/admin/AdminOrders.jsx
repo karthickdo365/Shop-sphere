@@ -13,7 +13,7 @@ export default function AdminOrders() {
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  // const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState(null);
 
@@ -22,7 +22,7 @@ export default function AdminOrders() {
     try {
       const params = new URLSearchParams({ page, limit: 20 });
       if (search) params.set('q', search);
-      if (statusFilter) params.set('status', statusFilter);
+      // if (statusFilter) params.set('status', statusFilter);
       const r = await api.get(`/orders/admin/all?${params.toString()}`);
       setOrders(r.data.data);
       setStats(r.data.stats);
@@ -36,7 +36,7 @@ export default function AdminOrders() {
 
   useEffect(() => {
     fetchOrders();
-  }, [page, search, statusFilter]);
+  }, [page, search, ]);
 
   const updateStatus = async (id, status, paymentStatus) => {
     try {
@@ -94,14 +94,14 @@ export default function AdminOrders() {
             onChange={(e) => { setPage(1); setSearch(e.target.value); }}
           />
         </div>
-        <select
+        {/* <select
           className="filter-select"
           value={statusFilter}
           onChange={(e) => { setPage(1); setStatusFilter(e.target.value); }}
         >
           <option value="">All Statuses</option>
           {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-        </select>
+        </select> */}
       </div>
 
       {loading ? (
@@ -139,7 +139,7 @@ export default function AdminOrders() {
                       <span className={`status-pill pay-${o.paymentStatus.toLowerCase()}`}>{o.paymentStatus}</span>
                     </td>
                     <td>
-                      <div className="status-select-wrap">
+                      {/* <div className="status-select-wrap">
                         <select
                           value={o.status}
                           onChange={(e) => updateStatus(o.id, e.target.value)}
@@ -148,7 +148,10 @@ export default function AdminOrders() {
                           {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                         </select>
                         <ChevronDown size={14} className="chevron" />
-                      </div>
+                      </div> */}
+                      <span className={`status-pill status-${o.status.toLowerCase()}`}>
+  {o.status}
+</span>
                     </td>
                     <td>{new Date(o.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
                     <td>
@@ -276,6 +279,35 @@ export default function AdminOrders() {
 
 .oi-info{
   flex:1;
+}
+  .status-pill.status-pending{
+  background:#fff3cd;
+  color:#b45309;
+}
+
+.status-pill.status-confirmed{
+  background:#dbeafe;
+  color:#2563eb;
+}
+
+.status-pill.status-shipped{
+  background:#ede9fe;
+  color:#7c3aed;
+}
+
+.status-pill.status-delivered{
+  background:#dcfce7;
+  color:#15803d;
+}
+
+.status-pill.status-cancelled{
+  background:#fee2e2;
+  color:#b91c1c;
+}
+
+.status-pill.status-returned{
+  background:#f3f4f6;
+  color:#4b5563;
 }
         .admin-orders { max-width: 1200px; }
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
