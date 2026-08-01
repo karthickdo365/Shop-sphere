@@ -203,15 +203,32 @@ export default function AdminOrders() {
               <div className="drawer-section">
                 <h4>Items</h4>
                 <ul className="order-items">
-                  {selected.items?.map((i) => (
-                    <li key={i.id}>
-                      <div className="oi-info">
-                        <p className="oi-name">{i.name}</p>
-                        <p className="oi-variant">{i.size} &middot; {i.color} &middot; Qty {i.quantity}</p>
-                      </div>
-                      <p className="oi-price">{formatPrice(i.price * i.quantity)}</p>
-                    </li>
-                  ))}
+                  {selected.items?.map((i) => {
+  console.log(i);
+
+  return (
+    <li key={i.id}>
+      <img
+        src={i.image || "https://via.placeholder.com/70"}
+        alt={i.name}
+        className="oi-image"
+      />
+
+      <div className="oi-info">
+        <p className="oi-name">{i.name}</p>
+
+        <p className="oi-variant">
+          {i.size} · {i.color} · Qty {i.quantity}
+        </p>
+      </div>
+
+      <p className="oi-price">
+        {formatPrice(i.price * i.quantity)}
+      </p>
+    </li>
+  );
+})}
+                
                 </ul>
               </div>
 
@@ -242,6 +259,24 @@ export default function AdminOrders() {
       )}
 
       <style>{`
+      .oi-image{
+  width:70px;
+  height:70px;
+  object-fit:cover;
+  border-radius:8px;
+  border:1px solid #ddd;
+  flex-shrink:0;
+}
+
+.order-items li{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.oi-info{
+  flex:1;
+}
         .admin-orders { max-width: 1200px; }
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .page-header h1 { font-size: 26px; font-weight: 700; }
