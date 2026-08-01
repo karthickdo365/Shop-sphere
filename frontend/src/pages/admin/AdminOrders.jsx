@@ -335,8 +335,8 @@ export default function AdminOrders() {
  .toolbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  justify-content: flex-start;
+  gap: 24px;
   margin-bottom: 20px;
   flex-wrap: wrap;
 }
@@ -349,17 +349,16 @@ export default function AdminOrders() {
   border: 1px solid var(--color-border);
   padding: 9px 14px;
   border-radius: 8px;
-  flex: 1;
-  min-width: 220px;
-  max-width: 340px;
+  width: 100%;
+  max-width: 320px;
+  flex-shrink: 0;
 }
 
 .status-filter-buttons {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
-  justify-content: flex-end;
 }
 
 .status-filter-buttons button {
