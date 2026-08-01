@@ -36,42 +36,30 @@ export const register = async (req, res) => {
     where: { email },
   });
 
-  
-
-
-
   await prisma.emailVerification.create({
-  data: {
-    name,
-    email,
-    password: hashedPassword,
-    token,
-    expiresAt: new Date(Date.now() + 60 * 60 * 1000),
-  },
-});
+    data: {
+      name,
+      email,
+      password: hashedPassword,
+      token,
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+    },
+  });
 
-const verifyUrl =
-  `${process.env.BACKEND_URL}/api/email/verify?token=${token}`;
+  const verifyUrl =
+    `${process.env.BACKEND_URL}/api/email/verify?token=${token}`;
 
-await sendVerificationEmail(
-  email,
-  verifyUrl,
-  name
-);
+  // Send email WITHOUT blocking registration.
+  // If SMTP/Brevo fails or times out, registration still succeeds.
+  sendVerificationEmail(email, verifyUrl, name).catch((err) => {
+    console.error("Verification email failed to send (non-blocking):", err.message);
+  });
 
-return res.status(200).json({
-  success: true,
-  message: "Verification link sent. Please check your email.",
-});
+  return res.status(200).json({
+    success: true,
+    message: "Verification link sent. Please check your email.",
+  });
 };
-  
-  
-
- 
-
-
-
-
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
