@@ -4,7 +4,9 @@ import api from '../utils/api.js';
 import ProductGrid from '../components/ProductGrid.jsx';
 import { formatPrice, getFirstImage } from '../utils/helpers.js';
 import BannerCarousel from '../components/BannerCarousel.jsx';
-  
+  import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
+import toast from "react-hot-toast";
 
 export default function Home() {
   const [categories, setCategories] = useState([]);
@@ -12,6 +14,16 @@ export default function Home() {
   const [newArrivals, setNewArrivals] = useState([]);
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+const { user } = useAuth();
+
+const handleCategoryClick = (e, slug) => {
+  if (!user) {
+    e.preventDefault();
+    toast.error("Please login first");
+    navigate("/login");
+  }
+};
 
   useEffect(() => {
     Promise.all([
@@ -55,7 +67,12 @@ export default function Home() {
             <div className="loader"><div className="spinner" /></div>
           ) : (
             categories.map((cat) => (
-              <Link to={`/category/${cat.slug}`} key={cat.id} className="category-card">
+              <Link
+  to={`/category/${cat.slug}`}
+  key={cat.id}
+  className="category-card"
+  onClick={(e) => handleCategoryClick(e, cat.slug)}
+>
                 <img src={cat.image || 'https://via.placeholder.com/400x400?text=' + cat.name} alt={cat.name} />
                 <p>{cat.name}</p>
               </Link>

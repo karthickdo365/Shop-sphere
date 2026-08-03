@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Heart, ShoppingBag } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useWishlist } from '../context/WishlistContext.jsx';
@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { formatPrice, getFirstImage, calculateDiscountPercent } from '../utils/helpers.js';
 
 export default function ProductCard({ product }) {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { addItem } = useCart();
@@ -49,9 +50,20 @@ export default function ProductCard({ product }) {
       toast.success('Added to cart!');
     }
   };
+  const handleProductClick = (e) => {
+  if (!user) {
+    e.preventDefault();
+    toast.error("Please login to view products");
+    navigate("/login");
+  }
+};
 
   return (
-    <Link to={`/product/${product.slug || product.id}`} className="product-card">
+  <Link
+  to={`/product/${product.slug || product.id}`}
+  className="product-card"
+  onClick={handleProductClick}
+>
       <div className="product-image-container">
         <img src={getFirstImage(product)} alt={product.name} loading="lazy" />
         {product.bundleAvailable && (

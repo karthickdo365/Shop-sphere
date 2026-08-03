@@ -76,12 +76,28 @@ export default function Header() {
       navigate(`/search?q=${encodeURIComponent(search.trim())}`);
     }
   };
+  const handleProtectedNavigation = (e, path) => {
+  if (!user) {
+    e.preventDefault();
+    toast.error("Please login first");
+    navigate("/login");
+    return;
+  }
 
-  const goToProduct = (slug) => {
-    setShowSearchDropdown(false);
-    setSearch('');
-    navigate(`/product/${slug}`);
-  };
+  navigate(path);
+};
+
+ const goToProduct = (slug) => {
+  if (!user) {
+    toast.error("Please login first");
+    navigate("/login");
+    return;
+  }
+
+  setShowSearchDropdown(false);
+  setSearch("");
+  navigate(`/product/${slug}`);
+};
 
   return (
     <header className={`header ${scrolled ? 'scrolled' : ''}`}>
@@ -108,7 +124,12 @@ export default function Header() {
               <div className="cat-mega-menu">
                 <div className="cat-mega-grid">
                   {categories.map((c) => (
-                    <Link key={c.id} to={`/category/${c.slug}`} className="cat-mega-item">
+                  <Link
+  key={c.id}
+  to={`/category/${c.slug}`}
+  className="cat-mega-item"
+  onClick={(e) => handleProtectedNavigation(e, `/category/${c.slug}`)}
+>
                       {c.image && <img src={c.image} alt={c.name} />}
                       <span>{c.name}</span>
                     </Link>
@@ -220,7 +241,14 @@ export default function Header() {
           <div className="mobile-cat-section">
             <strong>CATEGORIES</strong>
             {categories.map((c) => (
-              <Link key={c.id} to={`/category/${c.slug}`} onClick={() => setMenuOpen(false)} style={{ paddingLeft: '12px' }}>
+<Link
+  key={c.id}
+  to={`/category/${c.slug}`}
+  onClick={(e) => {
+    setMenuOpen(false);
+    handleProtectedNavigation(e, `/category/${c.slug}`);
+  }}
+> style={{ paddingLeft: '12px' }}
                 {c.name}
               </Link>
             ))}
