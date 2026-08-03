@@ -33,6 +33,7 @@ import ShippingPolicy from "./pages/ShippingPolicy.jsx";
 import Privacy from "./pages/Privacy.jsx";
 import TermsPolicy from "./pages/TermsPolicy.jsx";
 import OrderSuccess from "./pages/OrderSuccess";
+import Addresses from './pages/Addresses.jsx';
 
 
 
@@ -78,6 +79,13 @@ export default function App() {
           <Route path="/policy/shipping" element={<ShippingPolicy />} />
         <Route path="/policy/privacy"element={<Privacy />}/>
           <Route path="/policy/terms" element={<TermsPolicy />} />
+
+          <Route element={<ProtectedRoute />}>
+  <Route path="/product/:slug" element={<ProductPage />} />
+  <Route path="/category/:categoryId" element={<CategoryPage />} />
+  <Route path="/addresses" element={<Addresses />} />  {/* add this */}
+  {/* ...other routes */}
+</Route>
          
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<Checkout />} />
