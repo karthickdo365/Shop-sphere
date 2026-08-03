@@ -13,8 +13,9 @@ export default function Home() {
   const [newArrivals, setNewArrivals] = useState([]);
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+
 const { user } = useAuth();
+  const navigate = useNavigate();
 
 const handleCategoryClick = (e, slug) => {
   if (!user) {
