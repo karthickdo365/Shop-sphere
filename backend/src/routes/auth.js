@@ -132,4 +132,18 @@ router.get('/admin/users', protect, requireAdmin, asyncHandler(c.adminListUsers)
  */
 router.put('/admin/users/:id/role', protect, requireAdmin, asyncHandler(c.adminUpdateUserRole));
 
+/**
+ * @openapi
+ * /api/auth/profile:
+ *   put:
+ *     tags: [Auth]
+ *     summary: Update current user's profile (name, phone)
+ */
+router.put('/profile', protect, asyncHandler(c.updateProfile));
+router.get('/me', protect, asyncHandler(c.me));
+
+router.put('/profile', protect, asyncHandler(c.updateProfile));
+
+router.get('/addresses', protect, asyncHandler(c.listAddresses));
+
 export default router;

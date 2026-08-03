@@ -332,4 +332,86 @@ export const changePassword = async (req, res) => {
     success: true,
     message: "Password changed successfully",
   });
+
+
+ export const updateProfile = async (req, res) => {
+  const { name, phone } = req.body;
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({
+      success: false,
+      message: "Name is required",
+    });
+  }
+
+  const trimmedPhone = phone?.trim() || null;
+
+  // Prisma's phone field is @unique — check for a conflict with another user first
+  if (trimmedPhone) {
+    const phoneOwner = await prisma.user.findUnique({
+      where: { phone: trimmedPhone },
+    });
+    if (phoneOwner && phoneOwner.id !== req.user.id) {
+      return res.status(409).json({
+        success: false,
+        message: "This phone number is already linked to another account",
+      });
+    }
+  }
+
+  try {
+    const updated = await prisma.user.update({
+      where: { id: req.user.id },
+      data: {
+        name: name.trim(),
+        phone: trimmedPhone,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        isEmailVerified: true,
+      },
+    });
+
+    res.json({
+      success: true,
+      message: "Profile updated successfully",
+      data: updated,
+    });
+  } catch (err) {
+    // Fallback in case of a race condition past the check above
+    if (err.code === "P2002") {
+      return res.status(409).json({
+        success: false,
+        message: "This phone number is already linked to another account",
+      });
+    }
+    throw err;
+  }
+};
+
+  const updated = await prisma.user.update({
+    where: { id: req.user.id },
+    data: {
+      name: name.trim(),
+      phone: phone?.trim() || null,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      role: true,
+      isEmailVerified: true,
+    },
+  });
+
+  res.json({
+    success: true,
+    message: "Profile updated successfully",
+    data: updated,
+  });
 };

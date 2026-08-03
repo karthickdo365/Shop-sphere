@@ -34,6 +34,12 @@ import Privacy from "./pages/Privacy.jsx";
 import TermsPolicy from "./pages/TermsPolicy.jsx";
 import OrderSuccess from "./pages/OrderSuccess";
 import Addresses from './pages/Addresses.jsx';
+import Profile from './pages/Profile.jsx';
+import Payments from './pages/Payments.jsx';
+import Security from './pages/Security.jsx';
+import Settings from './pages/Settings.jsx';
+
+
 
 export default function App() {
   const location = useLocation();
@@ -89,6 +95,11 @@ export default function App() {
           <Route path="/new-arrivals" element={<NewArrivals />} />
           <Route path="/offers" element={<Offers />} />
           <Route path="*" element={<NotFound />} />
+        
+<Route path="/profile" element={<Profile />} />
+<Route path="/payments" element={<Payments />} />
+<Route path="/security" element={<Security />} />
+<Route path="/settings" element={<Settings />} />
         </Routes>
       </main>
       <Footer />
