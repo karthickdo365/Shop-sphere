@@ -87,10 +87,10 @@ useEffect(() => {
         <p className="auth-switch">
           Don't have an account? <Link to="/register">Register</Link>
         </p>
-        <div className="demo-creds">
+        {/* <div className="demo-creds">
           <p><strong>Demo:</strong> customer@example.com / customer123</p>
           <p><strong>Admin:</strong> admin@shopsphere.com / admin123</p>
-        </div>
+        </div> */}
       </div>
 
       <style>{`
