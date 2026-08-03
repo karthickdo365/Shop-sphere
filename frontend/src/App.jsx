@@ -35,8 +35,6 @@ import TermsPolicy from "./pages/TermsPolicy.jsx";
 import OrderSuccess from "./pages/OrderSuccess";
 import Addresses from './pages/Addresses.jsx';
 
-
-
 export default function App() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
@@ -68,25 +66,15 @@ export default function App() {
       <main className="main-content">
         <Routes>
           <Route path="/" element={<Home />} />
-        
-          <Route path="/order-success"element={<OrderSuccess />}/>
+          <Route path="/order-success" element={<OrderSuccess />} />
           <Route path="/category/:slug" element={<CategoryPage />} />
           <Route path="/product/:slug" element={<ProductDetail />} />
           <Route path="/about" element={<AboutUs brandName="ShopSphere" />} />
-        
-          <Route path='/contact' element={<Contact/>}/>
+          <Route path="/contact" element={<Contact />} />
           <Route path="/policy/returns" element={<ReturnsPolicy />} />
           <Route path="/policy/shipping" element={<ShippingPolicy />} />
-        <Route path="/policy/privacy"element={<Privacy />}/>
+          <Route path="/policy/privacy" element={<Privacy />} />
           <Route path="/policy/terms" element={<TermsPolicy />} />
-
-          <Route element={<ProtectedRoute />}>
-  <Route path="/product/:slug" element={<ProductPage />} />
-  <Route path="/category/:categoryId" element={<CategoryPage />} />
-  <Route path="/addresses" element={<Addresses />} />  {/* add this */}
-  {/* ...other routes */}
-</Route>
-         
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/login" element={<Login />} />
@@ -96,6 +84,7 @@ export default function App() {
           <Route path="/account" element={<Account />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/addresses" element={<Addresses />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/new-arrivals" element={<NewArrivals />} />
           <Route path="/offers" element={<Offers />} />
