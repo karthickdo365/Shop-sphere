@@ -59,10 +59,16 @@ export default function ProductCard({ product }) {
 };
 
   return (
-  <Link
+<Link
   to={`/product/${product.slug || product.id}`}
   className="product-card"
-  onClick={handleProductClick}
+  onClick={(e) => {
+    if (!user) {
+      e.preventDefault();
+      toast.error("Please login first");
+      navigate("/login");
+    }
+  }}
 >
       <div className="product-image-container">
         <img src={getFirstImage(product)} alt={product.name} loading="lazy" />

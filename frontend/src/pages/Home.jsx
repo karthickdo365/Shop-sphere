@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import api from '../utils/api.js';
-import ProductGrid from '../components/ProductGrid.jsx';
-import { formatPrice, getFirstImage } from '../utils/helpers.js';
-import BannerCarousel from '../components/BannerCarousel.jsx';
-  import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import api from "../utils/api.js";
+import ProductGrid from "../components/ProductGrid.jsx";
+import { formatPrice, getFirstImage } from "../utils/helpers.js";
+import BannerCarousel from "../components/BannerCarousel.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import toast from "react-hot-toast";
 
