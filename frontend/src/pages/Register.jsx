@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate,  } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../utils/api";
@@ -16,35 +16,40 @@ export default function Register() {
     password: "",
   });
 
-
   const handleChange = (e) => {
     setForm({
       ...form,
       [e.target.name]: e.target.value,
     });
   };
-const handleRegister = async (e) => {
-  e.preventDefault();
 
-  setLoading(true);
+  const handleRegister = async (e) => {
+    e.preventDefault();
 
-  try {
-    const res = await api.post("/auth/register", form);
+    if (loading) return; // extra guard against double-submit (e.g. double-click, Enter + click)
 
-    toast.success(
-      res.data.message ||
-      "Verification email sent. Please check your inbox."
-    );
+    setLoading(true);
 
-    navigate("/login");
-  } catch (err) {
-    toast.error(
-      err.response?.data?.message || "Registration failed"
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      const res = await api.post("/auth/register", {
+        ...form,
+        email: form.email.trim().toLowerCase(),
+      });
+
+      toast.success(
+        res.data.message ||
+        "Verification email sent. Please check your inbox."
+      );
+
+      navigate("/login");
+    } catch (err) {
+      toast.error(
+        err.response?.data?.message || "Registration failed"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="auth-page">
@@ -68,6 +73,7 @@ const handleRegister = async (e) => {
               className="form-input"
               value={form.name}
               onChange={handleChange}
+              autoComplete="name"
             />
           </div>
 
@@ -83,6 +89,7 @@ const handleRegister = async (e) => {
               className="form-input"
               value={form.email}
               onChange={handleChange}
+              autoComplete="email"
             />
           </div>
 
@@ -104,6 +111,7 @@ const handleRegister = async (e) => {
                 className="form-input"
                 value={form.password}
                 onChange={handleChange}
+                autoComplete="new-password"
                 style={{
                   paddingRight: "45px",
                 }}
@@ -115,6 +123,7 @@ const handleRegister = async (e) => {
                 onClick={() =>
                   setShowPassword(!showPassword)
                 }
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
                   <EyeOff size={18} />
@@ -126,6 +135,7 @@ const handleRegister = async (e) => {
           </div>
 
           <button
+            type="submit"
             className="btn btn-primary btn-block btn-lg"
             disabled={loading}
           >

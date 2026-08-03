@@ -19,8 +19,6 @@ export const register = async (req, res) => {
     where: { email },
   });
 
-  // rest of your code...
-
   if (existing) {
     return res.status(409).json({
       success: false,
@@ -28,32 +26,53 @@ export const register = async (req, res) => {
     });
   }
 
-  const token = crypto.randomBytes(32).toString("hex");
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  // Delete old pending verification for this email
-  await prisma.emailVerification.deleteMany({
-    where: { email },
-  });
-
-  await prisma.emailVerification.create({
-    data: {
-      name,
+  // Reuse an existing, still-valid pending verification instead of
+  // deleting it — prevents double-submits / accidental resubmits from
+  // invalidating a link the user already received in their inbox.
+  const pending = await prisma.emailVerification.findFirst({
+    where: {
       email,
-      password: hashedPassword,
-      token,
-      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      expiresAt: { gt: new Date() },
     },
   });
 
-  const verifyUrl =
-    `${process.env.BACKEND_URL}/api/email/verify?token=${token}`;
+  let token;
 
-  // Send email WITHOUT blocking registration.
-  // If SMTP/Brevo fails or times out, registration still succeeds.
-  sendVerificationEmail(email, verifyUrl, name).catch((err) => {
-    console.error("Verification email failed to send (non-blocking):", err.message);
-  });
+  if (pending) {
+    // A valid verification is already pending for this email.
+    // Reuse the same token so any link already sent still works.
+    token = pending.token;
+
+    console.log("Reusing existing pending verification for:", email);
+  } else {
+    // No valid pending record — safe to clean up any expired/stale
+    // rows and create a fresh one.
+    await prisma.emailVerification.deleteMany({
+      where: { email },
+    });
+
+    token = crypto.randomBytes(32).toString("hex");
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await prisma.emailVerification.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        token,
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      },
+    });
+
+    const verifyUrl =
+      `${process.env.BACKEND_URL}/api/email/verify?token=${token}`;
+
+    // Send email WITHOUT blocking registration.
+    // If SMTP/Brevo fails or times out, registration still succeeds.
+    sendVerificationEmail(email, verifyUrl, name).catch((err) => {
+      console.error("Verification email failed to send (non-blocking):", err.message);
+    });
+  }
 
   return res.status(200).json({
     success: true,
@@ -107,6 +126,7 @@ export const login = async (req, res) => {
     },
   });
 };
+
 export const me = async (req, res) => {
   res.json({ success: true, data: req.user });
 };
@@ -128,10 +148,9 @@ export const addAddress = async (req, res) => {
     data: { userId: req.user.id, fullName, phone, line1, line2, city, state, pincode, isDefault: !!isDefault },
   });
   res.status(201).json({
-  success: true,
-  data: address,
-});
-
+    success: true,
+    data: address,
+  });
 };
 
 // =========================
@@ -228,8 +247,8 @@ export const forgotPassword = async (req, res) => {
 
   // Build reset URL
   const appUrl = process.env.APP_URL || 'http://localhost:5173';
-const resetUrl =
-`${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+  const resetUrl =
+    `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
   // Send email
   try {
@@ -309,8 +328,8 @@ export const changePassword = async (req, res) => {
     where: { id: user.id },
     data: { password: hashed },
   });
- res.json({
-  success: true,
-  message: "Password changed successfully",
-});
+  res.json({
+    success: true,
+    message: "Password changed successfully",
+  });
 };
