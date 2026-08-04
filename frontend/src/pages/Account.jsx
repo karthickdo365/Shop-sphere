@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import api from '../utils/api.js';
 import {
@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 export default function Account() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
 
   const [address, setAddress] = useState(null);
@@ -36,7 +36,10 @@ export default function Account() {
       .finally(() => setLoadingAddress(false));
   }, [user]);
 
-  if (!user) return null;
+  // All hooks above this line run on every render, no matter what.
+  // Only now is it safe to return early.
+  if (loading) return null; // wait for auth check to finish
+  if (!user) return <Navigate to="/login" replace />;
 
   const handleLogout = () => {
     logout();
