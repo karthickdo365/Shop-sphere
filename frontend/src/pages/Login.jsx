@@ -6,13 +6,16 @@ import { useAuth } from '../context/AuthContext.jsx';
 
 export default function Login() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-useEffect(() => {
-  if (searchParams.get("verified") === "true") {
-    toast.success("Email verified successfully. Please login.");
-  }
-}, [searchParams]);
+  useEffect(() => {
+    if (searchParams.get("verified") === "true") {
+      toast.success("Email verified successfully. Please login.");
+      // Clean the URL so refreshing the page doesn't re-trigger the toast
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -87,10 +90,6 @@ useEffect(() => {
         <p className="auth-switch">
           Don't have an account? <Link to="/register">Register</Link>
         </p>
-        {/* <div className="demo-creds">
-          <p><strong>Demo:</strong> customer@example.com / customer123</p>
-          <p><strong>Admin:</strong> admin@shopsphere.com / admin123</p>
-        </div> */}
       </div>
 
       <style>{`
@@ -120,12 +119,6 @@ useEffect(() => {
         .forgot-link:hover { text-decoration: underline; }
         .auth-switch { text-align: center; margin-top: 16px; font-size: 13px; color: var(--color-text-light); }
         .auth-switch a { color: var(--color-accent); font-weight: 500; }
-        .demo-creds {
-          margin-top: 20px; padding: 12px;
-          background: var(--color-light-gray);
-          border-radius: 6px;
-          font-size: 12px; color: var(--color-text-light);
-        }
       `}</style>
     </div>
   );
