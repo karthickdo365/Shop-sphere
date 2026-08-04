@@ -244,13 +244,14 @@ export default function Header() {
 <Link
   key={c.id}
   to={`/category/${c.slug}`}
+  style={{ paddingLeft: "12px" }}
   onClick={(e) => {
     setMenuOpen(false);
     handleProtectedNavigation(e, `/category/${c.slug}`);
   }}
-> style={{ paddingLeft: '12px' }}
-                {c.name}
-              </Link>
+>
+  {c.name}
+</Link>
             ))}
           </div>
           <Link to="/new-arrivals" onClick={() => setMenuOpen(false)}>NEW ARRIVALS</Link>
