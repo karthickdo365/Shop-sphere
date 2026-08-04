@@ -26,9 +26,6 @@ export const register = async (req, res) => {
     });
   }
 
-  // Reuse an existing, still-valid pending verification instead of
-  // deleting it — prevents double-submits / accidental resubmits from
-  // invalidating a link the user already received in their inbox.
   const pending = await prisma.emailVerification.findFirst({
     where: {
       email,
@@ -39,14 +36,9 @@ export const register = async (req, res) => {
   let token;
 
   if (pending) {
-    // A valid verification is already pending for this email.
-    // Reuse the same token so any link already sent still works.
     token = pending.token;
-
     console.log("Reusing existing pending verification for:", email);
   } else {
-    // No valid pending record — safe to clean up any expired/stale
-    // rows and create a fresh one.
     await prisma.emailVerification.deleteMany({
       where: { email },
     });
@@ -67,8 +59,6 @@ export const register = async (req, res) => {
     const verifyUrl =
       `${process.env.BACKEND_URL}/api/email/verify?token=${token}`;
 
-    // Send email WITHOUT blocking registration.
-    // If SMTP/Brevo fails or times out, registration still succeeds.
     sendVerificationEmail(email, verifyUrl, name).catch((err) => {
       console.error("Verification email failed to send (non-blocking):", err.message);
     });
@@ -129,6 +119,63 @@ export const login = async (req, res) => {
 
 export const me = async (req, res) => {
   res.json({ success: true, data: req.user });
+};
+
+export const updateProfile = async (req, res) => {
+  const { name, phone } = req.body;
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({
+      success: false,
+      message: "Name is required",
+    });
+  }
+
+  const trimmedPhone = phone?.trim() || null;
+
+  if (trimmedPhone) {
+    const phoneOwner = await prisma.user.findUnique({
+      where: { phone: trimmedPhone },
+    });
+    if (phoneOwner && phoneOwner.id !== req.user.id) {
+      return res.status(409).json({
+        success: false,
+        message: "This phone number is already linked to another account",
+      });
+    }
+  }
+
+  try {
+    const updated = await prisma.user.update({
+      where: { id: req.user.id },
+      data: {
+        name: name.trim(),
+        phone: trimmedPhone,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        isEmailVerified: true,
+      },
+    });
+
+    res.json({
+      success: true,
+      message: "Profile updated successfully",
+      data: updated,
+    });
+  } catch (err) {
+    if (err.code === "P2002") {
+      return res.status(409).json({
+        success: false,
+        message: "This phone number is already linked to another account",
+      });
+    }
+    throw err;
+  }
 };
 
 export const listAddresses = async (req, res) => {
@@ -224,8 +271,6 @@ export const forgotPassword = async (req, res) => {
   }
 
   const user = await prisma.user.findUnique({ where: { email } });
-  // For privacy: do not reveal whether the email exists or not
-  // Always return success, but only send email if user exists
   if (!user) {
     return res.json({
       success: true,
@@ -233,29 +278,22 @@ export const forgotPassword = async (req, res) => {
     });
   }
 
-  // Generate a secure token
   const token = crypto.randomBytes(32).toString('hex');
-  const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
-  // Invalidate previous tokens
   await prisma.passwordReset.deleteMany({ where: { userId: user.id } });
 
-  // Store new token
   await prisma.passwordReset.create({
     data: { userId: user.id, token, expiresAt },
   });
 
-  // Build reset URL
-  const appUrl = process.env.APP_URL || 'http://localhost:5173';
   const resetUrl =
     `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
-  // Send email
   try {
     await sendPasswordResetEmail(user.email, resetUrl, user.name);
   } catch (err) {
     console.error('Forgot password email failed:', err.message);
-    // Don't leak error to client
   }
 
   res.json({
@@ -331,87 +369,5 @@ export const changePassword = async (req, res) => {
   res.json({
     success: true,
     message: "Password changed successfully",
-  });
-
-
- export const updateProfile = async (req, res) => {
-  const { name, phone } = req.body;
-
-  if (!name || !name.trim()) {
-    return res.status(400).json({
-      success: false,
-      message: "Name is required",
-    });
-  }
-
-  const trimmedPhone = phone?.trim() || null;
-
-  // Prisma's phone field is @unique — check for a conflict with another user first
-  if (trimmedPhone) {
-    const phoneOwner = await prisma.user.findUnique({
-      where: { phone: trimmedPhone },
-    });
-    if (phoneOwner && phoneOwner.id !== req.user.id) {
-      return res.status(409).json({
-        success: false,
-        message: "This phone number is already linked to another account",
-      });
-    }
-  }
-
-  try {
-    const updated = await prisma.user.update({
-      where: { id: req.user.id },
-      data: {
-        name: name.trim(),
-        phone: trimmedPhone,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        role: true,
-        isEmailVerified: true,
-      },
-    });
-
-    res.json({
-      success: true,
-      message: "Profile updated successfully",
-      data: updated,
-    });
-  } catch (err) {
-    // Fallback in case of a race condition past the check above
-    if (err.code === "P2002") {
-      return res.status(409).json({
-        success: false,
-        message: "This phone number is already linked to another account",
-      });
-    }
-    throw err;
-  }
-};
-
-  const updated = await prisma.user.update({
-    where: { id: req.user.id },
-    data: {
-      name: name.trim(),
-      phone: phone?.trim() || null,
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      phone: true,
-      role: true,
-      isEmailVerified: true,
-    },
-  });
-
-  res.json({
-    success: true,
-    message: "Profile updated successfully",
-    data: updated,
   });
 };
