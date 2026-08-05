@@ -100,7 +100,7 @@ export default function BannerCarousel({ banners = [] }) {
         .banner-carousel {
           position: relative;
           width: 100%;
-          height: 420px;
+          height: 500px;
           overflow: hidden;
           background: var(--color-dark);
         }
